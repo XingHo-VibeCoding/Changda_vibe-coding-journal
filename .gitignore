@@ -1,0 +1,7 @@
+# 本地敏感配置（如数据库连接串、API 密钥），永远不上传
+.env
+.env.local
+
+# 本地工具与系统文件，不属于项目内容
+.workbuddy/
+desktop.ini
