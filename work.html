@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品 · 个人主页</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <a class="back" href="index.html">← 返回首页</a>
+
+    <div id="not-found" class="work-empty" hidden>
+      <p>请从首页进入，选择一个作品查看详情。</p>
+      <a href="index.html">回首页</a>
+    </div>
+
+    <article id="work-detail" class="work" hidden>
+      <h1 id="work-title">作品</h1>
+      <img id="work-img" class="work-img" src="" alt="">
+      <section>
+        <h2>作品简介</h2>
+        <p id="work-intro"></p>
+      </section>
+    </article>
+  </main>
+
+  <script>
+    var works = {
+      "速写": { img: "img-sketch-hand.jpg", intro: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在" },
+      "涂鸦": { img: "img-doodle-math.jpg", intro: "emmm，我想想……" },
+      "冲鸭": { img: "img-duck-chong.jpg", intro: "冲鸭！继续加油" }
+    };
+    var t = new URLSearchParams(window.location.search).get("title");
+    if (t && works[t]) {
+      var w = works[t];
+      document.getElementById("work-title").textContent = t;
+      document.getElementById("work-img").src = w.img;
+      document.getElementById("work-img").alt = t;
+      document.getElementById("work-intro").textContent = w.intro;
+      document.getElementById("work-detail").hidden = false;
+    } else {
+      document.getElementById("not-found").hidden = false;
+    }
+  </script>
+</body>
+</html>
