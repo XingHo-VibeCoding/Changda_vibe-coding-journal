@@ -14,6 +14,8 @@
    cd D:\Changda\Documents\vibe_coding
    ```
 3. 启动本地服务器：
+
+
    ```
    python -m http.server 8000
    ```
@@ -36,11 +38,11 @@ http://localhost:8000
 
 ## 四、常见问题
 
-| 问题 | 原因 | 解决 |
-|---|---|---|
-| 提示 `python` 不是命令 | 没装 Python，或没勾选 "Add to PATH" | 装 Python 时勾选加入 PATH（注意：本机用 `python`，不是 `python3`） |
-| 提示端口被占用（Address already in use） | 8000 端口被别的程序占用 | 换端口：`python -m http.server 8080`，然后访问 `http://localhost:8080` |
-| 页面打不开 | 服务器没在项目目录里启动 | 先 `cd` 进 `vibe_coding` 文件夹，再启动 |
+| 问题                              | 原因                           | 解决                                                            |
+| ------------------------------- | ---------------------------- | ------------------------------------------------------------- |
+| 提示 `python` 不是命令                | 没装 Python，或没勾选 "Add to PATH" | 装 Python 时勾选加入 PATH（注意：本机用 `python`，不是 `python3`）             |
+| 提示端口被占用（Address already in use） | 8000 端口被别的程序占用               | 换端口：`python -m http.server 8080`，然后访问 `http://localhost:8080` |
+| 页面打不开                           | 服务器没在项目目录里启动                 | 先 `cd` 进 `vibe_coding` 文件夹，再启动                                |
 
 ## 五、另一种方式（双击直接看）
 
@@ -50,10 +52,12 @@ http://localhost:8000
 
 ## 六、项目文件清单
 
-| 文件 | 作用 |
-|---|---|
+| 文件                                                        | 作用            |
+| --------------------------------------------------------- | ------------- |
 | `index.html` | 首页 |
 | `work.html` | 作品详情页 |
+| `share.html` | 分享列表页（资源 + 作品） |
 | `style.css` | 全部样式 |
+| `data.js` | 分享数据源（mock 数据） |
 | `img-*.jpg` | 图片（头像、背景、作品图） |
 | `AGENTS.md` / `research.md` / `PRD.md` / `TECH_DESIGN.md` | 项目文档 |

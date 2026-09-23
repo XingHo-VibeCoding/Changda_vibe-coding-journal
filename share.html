@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分享 · 个人主页</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <a class="back" href="index.html">← 返回首页</a>
+
+    <header class="share-head">
+      <h1>分享</h1>
+      <p class="share-sub">我公开的作品与资源</p>
+    </header>
+
+    <nav class="filter">
+      <button class="filter-btn is-active" type="button" data-filter="all">全部</button>
+      <button class="filter-btn" type="button" data-filter="work">作品</button>
+      <button class="filter-btn" type="button" data-filter="res">资源</button>
+    </nav>
+
+    <div id="state-loading" class="state" hidden>加载中…</div>
+    <div id="state-empty" class="state" hidden>这里还没有内容</div>
+    <div id="state-error" class="state" hidden>加载出错了，请稍后再试</div>
+
+    <div id="list" class="list"></div>
+  </main>
+
+  <script src="data.js"></script>
+  <script>
+    var loadingEl = document.getElementById("state-loading");
+    var emptyEl = document.getElementById("state-empty");
+    var errorEl = document.getElementById("state-error");
+    var listEl = document.getElementById("list");
+    var btns = document.querySelectorAll(".filter-btn");
+    var filter = "all";
+
+    // 把「作品 + 资源」合成一个列表
+    function getItems() {
+      var items = [];
+      SITE_DATA.works.forEach(function (w) {
+        items.push({ type: "work", title: w.title, desc: w.desc, img: w.img });
+      });
+      SITE_DATA.resources.forEach(function (r) {
+        items.push({ type: "res", title: r.title, desc: r.desc, img: r.img || "", link: r.link || "" });
+      });
+      return items;
+    }
+
+    function show(name) {
+      loadingEl.hidden = name !== "loading";
+      emptyEl.hidden = name !== "empty";
+      errorEl.hidden = name !== "error";
+      listEl.hidden = name !== "list";
+    }
+
+    function render() {
+      var items = getItems().filter(function (i) {
+        if (filter === "work") return i.type === "work";
+        if (filter === "res") return i.type === "res";
+        return true;
+      });
+
+      // 空状态：筛选后没有内容
+      if (items.length === 0) {
+        emptyEl.textContent = filter === "res" ? "资源内容待补充，敬请期待" : "这里还没有内容";
+        show("empty");
+        return;
+      }
+
+      var html = "";
+      items.forEach(function (i) {
+        var tag = i.type === "work" ? "作品" : "资源";
+        var href = i.type === "work"
+          ? "work.html?title=" + encodeURIComponent(i.title)
+          : (i.link || "#");
+        var thumb = i.img
+          ? '<img class="list-thumb" src="' + i.img + '" alt="' + i.title + '">'
+          : "";
+        html +=
+          '<a class="list-item" href="' + href + '">' +
+            thumb +
+            '<div class="list-body">' +
+              '<h3 class="list-title">' + i.title + '</h3>' +
+              '<p class="list-desc">' + i.desc + '</p>' +
+              '<span class="tag">' + tag + '</span>' +
+            '</div>' +
+          '</a>';
+      });
+      listEl.innerHTML = html;
+      show("list");
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btns.forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        filter = btn.getAttribute("data-filter");
+        render();
+      });
+    });
+
+    // 四种状态演示：地址后加 ?state=empty 或 ?state=error 可强制查看对应状态
+    var state = new URLSearchParams(window.location.search).get("state");
+    if (state === "error") {
+      show("error");
+    } else if (state === "empty") {
+      show("empty");
+    } else {
+      // 模拟「加载中」→ 短暂延迟后渲染出列表
+      show("loading");
+      setTimeout(render, 400);
+    }
+  </script>
+</body>
+</html>

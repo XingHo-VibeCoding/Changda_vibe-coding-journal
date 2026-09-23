@@ -23,26 +23,28 @@
       </ul>
     </section>
 
-    <section class="works">
-      <h2>作品</h2>
-      <div class="card-grid">
-        <a class="card" href="work.html?title=速写">
-          <img class="card-img" src="img-sketch-hand.jpg" alt="速写：手">
-          <h3>速写</h3>
-          <p>速写课第一节，画自己的手，感觉还不错，看来美术功底还在</p>
-        </a>
-        <a class="card" href="work.html?title=涂鸦">
-          <img class="card-img" src="img-doodle-math.jpg" alt="随手涂鸦">
-          <h3>涂鸦</h3>
-          <p>emmm，我想想……</p>
-        </a>
-        <a class="card" href="work.html?title=冲鸭">
-          <img class="card-img" src="img-duck-chong.jpg" alt="冲鸭">
-          <h3>冲鸭</h3>
-          <p>冲鸭！继续加油</p>
-        </a>
+    <section class="shares">
+      <div class="section-head">
+        <h2>分享</h2>
+        <a class="more" href="share.html">更多 →</a>
       </div>
+      <div class="card-grid" id="home-cards"></div>
     </section>
   </main>
+
+  <script src="data.js"></script>
+  <script>
+    var grid = document.getElementById("home-cards");
+    var cards = "";
+    SITE_DATA.works.forEach(function (w) {
+      cards +=
+        '<a class="card" href="work.html?title=' + encodeURIComponent(w.title) + '">' +
+          '<img class="card-img" src="' + w.img + '" alt="' + w.title + '">' +
+          '<h3>' + w.title + '</h3>' +
+          '<p>' + w.desc + '</p>' +
+        '</a>';
+    });
+    grid.innerHTML = cards;
+  </script>
 </body>
 </html>
