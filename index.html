@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>王畅达 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <div class="bubbles" aria-hidden="true">
@@ -29,45 +29,82 @@
     <i style="left:89%;width:16px;height:16px;animation-duration:8.5s;animation-delay:-4s;"></i>
     <i style="left:94%;width:12px;height:12px;animation-duration:6.2s;animation-delay:-2.5s;"></i>
   </div>
-  <main class="container">
-    <header class="hero">
-      <img class="avatar" src="img-portrait.jpg" alt="王畅达的个人照片">
-      <h1>王畅达</h1>
-      <p class="subtitle">浙江大学自动化控制学生</p>
-      <p class="motto">「此生尽兴，赤诚善良」</p>
-    </header>
 
-    <section class="contact">
-      <h2>联系方式</h2>
-      <ul>
-        <li>邮箱：<a href="mailto:2898724740@qq.com">2898724740@qq.com</a></li>
-        <li>电话：<a href="tel:19892774575">19892774575</a></li>
-      </ul>
-    </section>
+  <header class="topnav">
+    <div class="topnav-inner">
+      <a class="brand" href="index.html">王畅达</a>
+      <nav class="nav-links">
+        <a href="index.html" class="is-active">首页</a>
+        <a href="share.html">我的分享</a>
+        <a href="#contact">联系我</a>
+      </nav>
+    </div>
+  </header>
 
-    <section class="shares">
-      <div class="section-head">
-        <h2>分享</h2>
-        <a class="more" href="share.html">更多 →</a>
+  <main class="page">
+    <div class="sheet">
+
+      <section class="banner" aria-hidden="true"></section>
+
+      <div class="columns">
+        <section class="about" id="contact">
+          <h2 class="col-title">关于我</h2>
+          <img class="avatar" src="img-portrait.jpg" alt="王畅达的个人照片">
+          <ul class="about-list">
+            <li><span class="k">姓名</span>王畅达</li>
+            <li><span class="k">身份</span>浙江大学自动化控制学生</li>
+            <li><span class="k">格言</span>「此生尽兴，赤诚善良」</li>
+            <li><span class="k">邮箱</span><a href="mailto:2898724740@qq.com">2898724740@qq.com</a></li>
+            <li><span class="k">电话</span><a href="tel:19892774575">19892774575</a></li>
+          </ul>
+          <div class="login-box" aria-hidden="true">
+            <h2 class="login-title">欢迎登录</h2>
+            <input type="text" placeholder="请输入用户名" tabindex="-1">
+            <input type="password" placeholder="请输入密码" tabindex="-1">
+            <button type="button" class="login-btn" tabindex="-1">登录</button>
+          </div>
+        </section>
+
+        <section class="intro">
+          <h2 class="col-title">个人简介</h2>
+          <p>Hello everyone! I'm Wang Changda, you can also call me supercalifragilisticexpialidocious Changda. It's my great honor to be here to introduce myself.</p>
+          <p>I'm originally from Hunan and grew up there. I moved to Hangzhou two years ago after I graduated from high school. Now I pursue my study in Zhejiang University, majoring in automation.</p>
+          <p>I guess I'm kind of guys who aren't too serious and have good sense of humor. And I pretty cheerful and talktive.</p>
+          <p>I like reading and playing badminton. I'm not good at playing ball game. But I think it's really excellent to play football with a bounch of people who are also not good at this, but have passion.</p>
+          <p>I'd love to make friends with all of you.</p>
+        </section>
       </div>
-      <div class="card-grid" id="home-cards"></div>
-    </section>
-  </main>
 
-  <script src="data.js"></script>
-  <script>
-    var grid = document.getElementById("home-cards");
-    var cards = "";
-    // 首页「分享」区块暂时只展示「涂鸦」类（现有真实内容）；等以后上传新内容再扩充
-    SITE_DATA.doodles.forEach(function (w) {
-      cards +=
-        '<a class="card" href="work.html?title=' + encodeURIComponent(w.title) + '">' +
-          '<img class="card-img" src="' + w.img + '" alt="' + w.title + '">' +
-          '<h3>' + w.title + '</h3>' +
-          '<p>' + w.desc + '</p>' +
-        '</a>';
-    });
-    grid.innerHTML = cards;
-  </script>
+      <section class="share">
+        <div class="section-head">
+          <h2>我的分享</h2>
+          <a class="more" href="share.html">更多 →</a>
+        </div>
+        <div class="cat-grid">
+          <a class="cat" href="share.html?cat=doodle">
+            <span class="cat-icon">涂</span>
+            <h3>涂鸦</h3>
+            <p>速写、涂鸦、随手画</p>
+          </a>
+          <a class="cat" href="share.html?cat=essay">
+            <span class="cat-icon">随</span>
+            <h3>随笔</h3>
+            <p>文字与生活随想</p>
+          </a>
+          <a class="cat" href="share.html?cat=photo">
+            <span class="cat-icon">合</span>
+            <h3>合影</h3>
+            <p>和朋友、家人的照片</p>
+          </a>
+          <a class="cat" href="share.html?cat=res">
+            <span class="cat-icon">资</span>
+            <h3>资源</h3>
+            <p>资料、工具、网盘文档</p>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
 </body>
 </html>
