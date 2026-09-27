@@ -58,7 +58,8 @@
   <script>
     var grid = document.getElementById("home-cards");
     var cards = "";
-    SITE_DATA.works.forEach(function (w) {
+    // 首页「分享」区块暂时只展示「涂鸦」类（现有真实内容）；等以后上传新内容再扩充
+    SITE_DATA.doodles.forEach(function (w) {
       cards +=
         '<a class="card" href="work.html?title=' + encodeURIComponent(w.title) + '">' +
           '<img class="card-img" src="' + w.img + '" alt="' + w.title + '">' +

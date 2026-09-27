@@ -39,7 +39,9 @@
 
     <nav class="filter">
       <button class="filter-btn is-active" type="button" data-filter="all">全部</button>
-      <button class="filter-btn" type="button" data-filter="work">作品</button>
+      <button class="filter-btn" type="button" data-filter="doodle">涂鸦</button>
+      <button class="filter-btn" type="button" data-filter="essay">随笔</button>
+      <button class="filter-btn" type="button" data-filter="photo">合影</button>
       <button class="filter-btn" type="button" data-filter="res">资源</button>
     </nav>
 
@@ -59,14 +61,20 @@
     var btns = document.querySelectorAll(".filter-btn");
     var filter = "all";
 
-    // 把「作品 + 资源」合成一个列表
+    // 把四个板块合成一个列表（每项带上自己的类型标识）
     function getItems() {
       var items = [];
-      SITE_DATA.works.forEach(function (w) {
-        items.push({ type: "work", title: w.title, desc: w.desc, img: w.img });
+      SITE_DATA.doodles.forEach(function (w) {
+        items.push({ type: "doodle", title: w.title, desc: w.desc, img: w.img });
+      });
+      SITE_DATA.essays.forEach(function (e) {
+        items.push({ type: "essay", title: e.title, desc: e.desc, img: e.img || "" });
+      });
+      SITE_DATA.photos.forEach(function (p) {
+        items.push({ type: "photo", title: p.title, desc: p.desc, img: p.img });
       });
       SITE_DATA.resources.forEach(function (r) {
-        items.push({ type: "res", title: r.title, desc: r.desc, img: r.img || "", link: r.link || "" });
+        items.push({ type: "res", title: r.title, desc: r.desc, link: r.link || "" });
       });
       return items;
     }
@@ -78,26 +86,35 @@
       listEl.hidden = name !== "list";
     }
 
+    // 四个板块对应的中文标签
+    var TYPE_LABEL = {
+      doodle: "涂鸦",
+      essay: "随笔",
+      photo: "合影",
+      res: "资源"
+    };
+
     function render() {
       var items = getItems().filter(function (i) {
-        if (filter === "work") return i.type === "work";
-        if (filter === "res") return i.type === "res";
-        return true;
+        if (filter === "all") return true;
+        return i.type === filter;
       });
 
       // 空状态：筛选后没有内容
       if (items.length === 0) {
-        emptyEl.textContent = filter === "res" ? "资源内容待补充，敬请期待" : "这里还没有内容";
+        var label = TYPE_LABEL[filter] || "";
+        emptyEl.textContent = label ? (label + "内容待补充，敬请期待") : "这里还没有内容";
         show("empty");
         return;
       }
 
       var html = "";
       items.forEach(function (i) {
-        var tag = i.type === "work" ? "作品" : "资源";
-        var href = i.type === "work"
-          ? "work.html?title=" + encodeURIComponent(i.title)
-          : (i.link || "#");
+        var tag = TYPE_LABEL[i.type];
+        // 资源类直接外链；涂鸦/随笔/合影带图的进详情页
+        var href = (i.type === "res")
+          ? (i.link || "#")
+          : "work.html?title=" + encodeURIComponent(i.title);
         var thumb = i.img
           ? '<img class="list-thumb" src="' + i.img + '" alt="' + i.title + '">'
           : "";
