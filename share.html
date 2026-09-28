@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>分享 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
   <div class="bubbles" aria-hidden="true">
@@ -61,6 +61,17 @@
     <i style="top:62%;left:78%;animation-duration:6.4s;animation-delay:3.8s;"></i>
     <i style="top:78%;left:60%;animation-duration:7.8s;animation-delay:7.8s;"></i>
   </div>
+  <header class="topnav">
+    <div class="topnav-inner">
+      <a class="brand" href="index.html">王畅达</a>
+      <nav class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="share.html" class="is-active">我的分享</a>
+        <a href="login.html">登录</a>
+      </nav>
+    </div>
+  </header>
+
   <main class="container">
     <a class="back" href="index.html">← 返回首页</a>
 
@@ -146,7 +157,7 @@
         // 资源类直接外链；涂鸦/随笔/合影带图的进详情页
         var href = (i.type === "res")
           ? (i.link || "#")
-          : "work.html?title=" + encodeURIComponent(i.title);
+          : "work.html?title=" + encodeURIComponent(i.title) + "&cat=" + i.type;
         var thumb = i.img
           ? '<img class="list-thumb" src="' + i.img + '" alt="' + i.title + '">'
           : "";
@@ -174,7 +185,19 @@
     });
 
     // 四种状态演示：地址后加 ?state=empty 或 ?state=error 可强制查看对应状态
-    var state = new URLSearchParams(window.location.search).get("state");
+    var params = new URLSearchParams(window.location.search);
+
+    // 分类联动：首页四板块入口带 ?cat=doodle/essay/photo/res 跳过来，自动筛到对应板块
+    var VALID_CATS = ["doodle", "essay", "photo", "res"];
+    var cat = params.get("cat");
+    if (VALID_CATS.indexOf(cat) !== -1) {
+      filter = cat;
+      btns.forEach(function (b) {
+        b.classList.toggle("is-active", b.getAttribute("data-filter") === cat);
+      });
+    }
+
+    var state = params.get("state");
     if (state === "error") {
       show("error");
     } else if (state === "empty") {

@@ -88,13 +88,17 @@ a:hover { text-decoration: underline; }
 .back {
   display: inline-block;
   margin-bottom: 16px;
-  color: var(--accent-dark);
+  color: #d9ecfb;
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
 }
+.back:hover { color: #fff; }
 
 .work h1 {
   font-size: 26px;
   font-weight: 600;
   margin: 8px 0 16px;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
 }
 
 .work-img {
@@ -107,6 +111,14 @@ a:hover { text-decoration: underline; }
   background: #fff;
 }
 
+.work section {
+  background: rgba(255, 255, 255, .93);
+  border: 1px solid rgba(255, 255, 255, .6);
+  border-radius: 12px;
+  padding: 4px 16px 16px;
+  margin-top: 16px;
+}
+.work section h2 { margin-top: 16px; }
 .work section p {
   margin: 8px 0 0;
 }
@@ -117,7 +129,8 @@ a:hover { text-decoration: underline; }
 }
 
 .work-empty p {
-  color: var(--muted);
+  color: rgba(255, 255, 255, .9);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
   margin: 0 0 12px;
 }
 
@@ -171,7 +184,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 32px 0 12px;
+  margin: 16px 0 12px;
 }
 .section-head h2 {
   margin: 0;
@@ -179,22 +192,29 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
   padding-left: 10px;
   border-left: 4px solid var(--accent);
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
 }
 .more {
   font-size: 14px;
-  color: var(--accent-dark);
+  color: rgba(255, 255, 255, .88);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
 }
+.more:hover { color: #fff; }
 
 /* === 分享列表页（share.html） === */
 .share-head h1 {
   font-size: 26px;
   font-weight: 600;
   margin: 8px 0 4px;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
 }
 .share-sub {
   margin: 0 0 16px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, .88);
   font-size: 14px;
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
 }
 
 .filter {
@@ -270,7 +290,97 @@ a:hover { text-decoration: underline; }
 .state {
   padding: 48px 0;
   text-align: center;
-  color: var(--muted);
+  color: rgba(255, 255, 255, .9);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+}
+
+/* === 登录页（毛玻璃卡片） === */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+  padding: 32px 16px;
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 28px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .18);
+  border: 1px solid rgba(255, 255, 255, .4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(8, 24, 48, .25);
+}
+.login-card h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
+}
+.login-card .login-sub {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, .82);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+}
+.login-card label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .9);
+  text-shadow: 0 1px 4px rgba(8, 24, 48, .5);
+}
+.login-card input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin: 0 0 16px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+  font-family: inherit;
+}
+.login-card input::placeholder {
+  color: rgba(255, 255, 255, .55);
+}
+.login-card input:focus {
+  outline: none;
+  border-color: #fff;
+  background: rgba(255, 255, 255, .2);
+}
+.login-card .login-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  margin-top: 4px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+}
+.login-card .login-btn:hover {
+  background: var(--accent-dark);
+}
+.login-hint {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .7);
+  text-shadow: 0 1px 4px rgba(8, 24, 48, .5);
+}
+.login-hint a {
+  color: #fff;
+  text-decoration: underline;
 }
 
 @media (max-width: 480px) {
@@ -324,48 +434,27 @@ a:hover { text-decoration: underline; }
 .sheet {
   max-width: 760px;
   margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(28, 78, 118, .12);
-}
-
-.banner {
-  position: relative;
-  overflow: hidden;
-  height: 200px;
-  background: url("img-bg-mv.png") center 18% / cover no-repeat;
-}
-.banner .stars {
-  position: absolute;
-  z-index: auto;
-}
-.banner .stars i {
-  width: 70px;
-  animation-name: shoot-sm;
-}
-@keyframes shoot-sm {
-  0%   { transform: rotate(-35deg) translateX(0); opacity: 0; }
-  4%   { opacity: 1; }
-  18%  { opacity: 1; }
-  30%  { opacity: 0; transform: rotate(-35deg) translateX(-320px); }
-  100% { opacity: 0; transform: rotate(-35deg) translateX(-320px); }
 }
 
 .columns {
   display: flex;
-  gap: 0;
-  padding: 24px;
+  gap: 16px;
+  padding: 0 0 16px;
 }
 .about {
-  flex: 0 0 224px;
-  padding-right: 16px;
-  border-right: 1px solid #e4edf2;
+  flex: 0 0 260px;
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 12px;
+  padding: 20px;
 }
 .intro {
   flex: 1;
-  padding-left: 24px;
   min-width: 0;
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 12px;
+  padding: 20px 24px;
 }
 .intro p {
   margin: 0 0 12px;
@@ -410,46 +499,9 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   margin-right: 6px;
 }
-.login-box {
-  margin-top: 16px;
-}
-.login-title {
-  margin: 0 0 12px;
-  padding: 6px 10px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 4px;
-}
-.login-box input {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  margin: 0 0 10px;
-  border: 1px solid #cfd8de;
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--text);
-  background: #fff;
-  font-family: inherit;
-}
-.login-box input::placeholder { color: #9aa7b0; }
-.login-btn {
-  display: block;
-  width: 100%;
-  padding: 8px 0;
-  border: none;
-  border-radius: 6px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 14px;
-  cursor: default;
-  font-family: inherit;
-}
 
 .share {
-  padding: 8px 24px 24px;
+  padding: 0 0 8px;
 }
 .share .section-head h2 {
   margin: 0;
@@ -462,9 +514,9 @@ a:hover { text-decoration: underline; }
 .cat {
   display: block;
   padding: 16px 12px;
-  border: 1px solid #e4edf2;
+  border: 1px solid rgba(255, 255, 255, .65);
   border-radius: 12px;
-  background: #fff;
+  background: rgba(255, 255, 255, .92);
   text-align: center;
   color: var(--text);
   text-decoration: none;
@@ -514,10 +566,8 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 600px) {
   .columns { flex-direction: column; }
-  .about { flex: none; padding-right: 0; border-right: none; margin-bottom: 24px; }
-  .intro { padding-left: 0; }
+  .about { flex: none; margin-bottom: 0; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
-  .banner { height: 150px; }
 }
 
 /* === 气泡背景（方案①：纯 CSS 动画） === */
