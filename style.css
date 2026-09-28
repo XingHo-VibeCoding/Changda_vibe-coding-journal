@@ -331,8 +331,25 @@ a:hover { text-decoration: underline; }
 }
 
 .banner {
+  position: relative;
+  overflow: hidden;
   height: 200px;
   background: url("img-bg-mv.png") center 18% / cover no-repeat;
+}
+.banner .stars {
+  position: absolute;
+  z-index: auto;
+}
+.banner .stars i {
+  width: 70px;
+  animation-name: shoot-sm;
+}
+@keyframes shoot-sm {
+  0%   { transform: rotate(-35deg) translateX(0); opacity: 0; }
+  4%   { opacity: 1; }
+  18%  { opacity: 1; }
+  30%  { opacity: 0; transform: rotate(-35deg) translateX(-320px); }
+  100% { opacity: 0; transform: rotate(-35deg) translateX(-320px); }
 }
 
 .columns {
@@ -462,14 +479,14 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent-light);
-  color: var(--accent-dark);
-  font-size: 16px;
-  font-weight: 600;
+  width: 76px;
+  height: 76px;
   margin-bottom: 8px;
+}
+.cat-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .cat h3 {
   margin: 0 0 4px;
@@ -527,4 +544,45 @@ a:hover { text-decoration: underline; }
 }
 @media (prefers-reduced-motion: reduce) {
   .bubbles i { animation: none; display: none; }
+  .cat-icon animateTransform { animation: none; }
+  .stars i { animation: none; display: none; }
+}
+
+/* === 流星划过（纯 CSS 动画） === */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.stars i {
+  position: absolute;
+  width: 90px;
+  height: 2px;
+  background: linear-gradient(to right, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0));
+  border-radius: 999px;
+  transform: rotate(-35deg);
+  transform-origin: left center;
+  opacity: 0;
+  animation: shoot linear infinite;
+}
+.stars i::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, .9);
+}
+@keyframes shoot {
+  0%   { transform: rotate(-35deg) translateX(0); opacity: 0; }
+  4%   { opacity: 1; }
+  18%  { opacity: 1; }
+  30%  { opacity: 0; transform: rotate(-35deg) translateX(-34vw); }
+  100% { opacity: 0; transform: rotate(-35deg) translateX(-34vw); }
 }
