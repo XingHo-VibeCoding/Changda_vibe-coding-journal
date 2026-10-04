@@ -123,6 +123,53 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 0;
 }
 
+/* 作品详情页「上一个/下一个」左右浮动箭头按钮 */
+.work-pager {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.pager-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  line-height: 1;
+  color: #2c3e50;
+  text-decoration: none;
+  background: rgba(255, 255, 255, .35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 50%;
+  pointer-events: auto;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.pager-btn:hover {
+  background: rgba(255, 255, 255, .5);
+  border-color: #fff;
+  text-decoration: none;
+  transform: translateY(-50%) scale(1.06);
+}
+#prev-link { left: 12px; }
+#next-link { right: 12px; }
+.pager-btn.is-disabled {
+  color: rgba(44, 62, 80, .35);
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .3);
+  cursor: default;
+  pointer-events: none;
+}
+
 .work-empty {
   text-align: center;
   padding: 48px 0;
@@ -192,15 +239,13 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
   padding-left: 10px;
   border-left: 4px solid var(--accent);
-  color: #fff;
-  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
+  color: var(--text);
 }
 .more {
   font-size: 14px;
-  color: rgba(255, 255, 255, .88);
-  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+  color: var(--accent-dark);
 }
-.more:hover { color: #fff; }
+.more:hover { color: var(--accent); }
 
 /* === 分享列表页（share.html） === */
 .share-head h1 {
@@ -492,6 +537,11 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   line-height: 1.6;
   white-space: nowrap;
+  color: var(--text);
+}
+.about-list li a {
+  color: var(--accent-dark);
+  text-decoration: underline;
 }
 .about-list .k {
   display: inline;
@@ -514,7 +564,7 @@ a:hover { text-decoration: underline; }
 .cat {
   display: block;
   padding: 16px 12px;
-  border: 1px solid rgba(255, 255, 255, .65);
+  border: 1px solid #e4edf2;
   border-radius: 12px;
   background: rgba(255, 255, 255, .92);
   text-align: center;
@@ -635,4 +685,209 @@ a:hover { text-decoration: underline; }
   18%  { opacity: 1; }
   30%  { opacity: 0; transform: rotate(-35deg) translateX(-34vw); }
   100% { opacity: 0; transform: rotate(-35deg) translateX(-34vw); }
+}
+
+/* === 首页侧栏式布局（个人主页改版，锚点导航 + 区块堆叠，可扩展） === */
+.home {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* 左侧栏 */
+.sidebar {
+  flex: 0 0 260px;
+  position: sticky;
+  top: 40px;
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(8, 24, 48, .14);
+}
+.side-avatar {
+  display: block;
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--accent-light);
+  margin: 0 auto 14px;
+}
+.side-name {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+.side-role {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.side-motto {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: var(--accent-dark);
+}
+.side-social {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.side-social a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  border: 1px solid #d5e9f6;
+  transition: transform .15s, background .15s;
+}
+.side-social a:hover {
+  background: #d8ecf9;
+  transform: translateY(-2px);
+}
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.side-nav a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.side-nav a:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  text-decoration: none;
+}
+.side-login {
+  display: block;
+  padding: 9px 0;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent-dark);
+  font-size: 14px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.side-login:hover {
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* 右侧内容区 */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.hero {
+  padding: 16px 8px 28px;
+}
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(8, 24, 48, .5);
+}
+.hero-sub {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, .9);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+}
+
+.panel {
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 28px rgba(8, 24, 48, .1);
+}
+.panel-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  padding-left: 10px;
+  border-left: 4px solid var(--accent);
+  color: var(--text);
+}
+.intro-text p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.intro-text p:last-child { margin-bottom: 0; }
+
+.contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.contact-list li {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text);
+}
+.contact-list li:last-child { margin-bottom: 0; }
+.contact-list .k {
+  color: var(--muted);
+  margin-right: 8px;
+}
+.contact-list a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+/* 我的分享区块：标题与面板顶对齐 */
+.panel .section-head {
+  margin-top: 0;
+}
+
+/* 手机端：侧栏折叠到顶部，内容区全宽 */
+@media (max-width: 768px) {
+  .home {
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px 16px 48px;
+  }
+  .sidebar {
+    position: static;
+    flex: none;
+    width: 100%;
+  }
+  .side-nav {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .side-nav a {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+  .hero h1 { font-size: 28px; }
+  .panel { padding: 20px 16px; }
 }

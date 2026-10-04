@@ -10,15 +10,16 @@
 // 现在只有「涂鸦」有真实内容（3 张画），其余三类留空，等以后上传了再往里加。
 
 var SITE_DATA = {
-  // 涂鸦：速写 / 涂鸦 / 冲鸭
+  // 涂鸦：手 / 涂鸦 / 冲鸭 / 线条狗
   doodles: [
-    { title: "速写", desc: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在", img: "img-sketch-hand.jpg" },
+    { title: "手", desc: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在", img: "img-hand.jpg" },
     { title: "涂鸦", desc: "emmm，我想想……", img: "img-doodle-math.jpg" },
-    { title: "冲鸭", desc: "冲鸭！继续加油", img: "img-duck-chong.jpg" }
+    { title: "冲鸭", desc: "冲鸭！继续加油", img: "img-chongya.jpg" },
+    { title: "线条狗", desc: "被阳光晾晒的小狗，云朵也化作小狗的模样，把可爱晒得蓬松柔软。", img: "img-dog-line.jpg" }
   ],
   // 随笔：文字短文（可配图）
   essays: [
-    // 待补充：{ title: "标题", desc: "正文……", img: "" }
+    { title: "下一个灵气复苏时代", desc: "非洲大地可以等下一个雨季，但人的一生那么短，还能等到下一个灵气复苏的时代吗？", img: "" }
   ],
   // 合影：和朋友/家人的合照
   photos: [

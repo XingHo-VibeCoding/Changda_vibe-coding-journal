@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>王畅达 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
   <div class="bubbles" aria-hidden="true">
@@ -63,44 +63,49 @@
     <i style="top:78%;left:60%;animation-duration:7.8s;animation-delay:7.8s;"></i>
   </div>
 
-  <header class="topnav">
-    <div class="topnav-inner">
-      <a class="brand" href="index.html">王畅达</a>
-      <nav class="nav-links">
-        <a href="index.html" class="is-active">首页</a>
-        <a href="share.html">我的分享</a>
-        <a href="login.html">登录</a>
-      </nav>
-    </div>
-  </header>
+  <div class="home">
+    <aside class="sidebar">
+      <img class="side-avatar" src="img-avatar.jpg" alt="我在图舒馆的头像">
+      <h1 class="side-name">我在图舒馆</h1>
+      <p class="side-role">浙江大学自动化控制学生</p>
+      <p class="side-motto">「此生尽兴，赤诚善良」</p>
 
-  <main class="page">
-    <div class="sheet">
-
-      <div class="columns">
-        <section class="about" id="contact">
-          <h2 class="col-title">关于我</h2>
-          <img class="avatar" src="img-portrait.jpg" alt="王畅达的个人照片">
-          <ul class="about-list">
-            <li><span class="k">姓名</span>王畅达</li>
-            <li><span class="k">身份</span>浙江大学自动化控制学生</li>
-            <li><span class="k">格言</span>「此生尽兴，赤诚善良」</li>
-            <li><span class="k">邮箱</span><a href="mailto:2898724740@qq.com">2898724740@qq.com</a></li>
-            <li><span class="k">电话</span><a href="tel:19892774575">19892774575</a></li>
-          </ul>
-        </section>
-
-        <section class="intro">
-          <h2 class="col-title">个人简介</h2>
-          <p>Hello everyone! I'm Wang Changda, you can also call me supercalifragilisticexpialidocious Changda. It's my great honor to be here to introduce myself.</p>
-          <p>I'm originally from Hunan and grew up there. I moved to Hangzhou two years ago after I graduated from high school. Now I pursue my study in Zhejiang University, majoring in automation.</p>
-          <p>I guess I'm kind of guys who aren't too serious and have good sense of humor. And I pretty cheerful and talktive.</p>
-          <p>I like reading and playing badminton. I'm not good at playing ball game. But I think it's really excellent to play football with a bounch of people who are also not good at this, but have passion.</p>
-          <p>I'd love to make friends with all of you.</p>
-        </section>
+      <div class="side-social">
+        <a href="mailto:2898724740@qq.com" aria-label="邮箱" title="邮箱">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2f9bd6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </a>
+        <a href="tel:19892774575" aria-label="电话" title="电话">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2f9bd6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>
+        </a>
       </div>
 
-      <section class="share">
+      <nav class="side-nav">
+        <a href="#about">个人简介</a>
+        <a href="#share">我的分享</a>
+        <a href="#contact">联系我</a>
+      </nav>
+
+      <a class="side-login" href="login.html">登录</a>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <h1>我在图舒馆</h1>
+        <p class="hero-sub">Hello! I'm Wang Changda — nice to meet you.</p>
+      </section>
+
+      <section id="about" class="panel">
+        <h2 class="panel-title">个人简介</h2>
+        <div class="intro-text">
+          <p>Hello everyone! I'm Wang Changda, you can also call me supercalifragilisticexpialidocious Changda. It's my great honor to be here to introduce myself.</p>
+          <p>I'm originally from Hunan and grew up there. I moved to Hangzhou two years ago after graduating from high school. Now I pursue my studies at Zhejiang University, majoring in Automation.</p>
+          <p>I guess I'm someone who isn't overly serious and has a good sense of humor. I'm pretty cheerful and talkative.</p>
+          <p>I like reading and playing badminton. I'm not good at ball games in general. But I think it's really fun to play football with a bunch of people who are also not good at it but full of passion.</p>
+          <p>I'd love to make friends with all of you.</p>
+        </div>
+      </section>
+
+      <section id="share" class="panel">
         <div class="section-head">
           <h2>我的分享</h2>
           <a class="more" href="share.html">更多 →</a>
@@ -187,7 +192,14 @@
         </div>
       </section>
 
-    </div>
-  </main>
+      <section id="contact" class="panel">
+        <h2 class="panel-title">联系我</h2>
+        <ul class="contact-list">
+          <li><span class="k">邮箱</span><a href="mailto:2898724740@qq.com">2898724740@qq.com</a></li>
+          <li><span class="k">电话</span><a href="tel:19892774575">19892774575</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
 </body>
 </html>

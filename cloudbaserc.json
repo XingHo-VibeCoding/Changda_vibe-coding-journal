@@ -1,0 +1,33 @@
+{
+  "envId": "changda-vibecoding-d8c0v64bdbf7c",
+  "framework": {
+    "name": "changda-homepage",
+    "plugins": {
+      "client": {
+        "use": "@cloudbase/framework-plugin-website",
+        "inputs": {
+          "buildCommand": "",
+          "outputPath": ".",
+          "ignore": [
+            ".git",
+            ".gitignore",
+            ".workbuddy",
+            "node_modules",
+            "functions",
+            "*.md",
+            "AGENTS.md",
+            "research.md",
+            "PRD.md",
+            "TECH_DESIGN.md",
+            "RUN.md",
+            "img-bg-water.jpg",
+            "img-portrait.jpg",
+            "img-duck-chong.jpg",
+            "img-sketch-hand.jpg",
+            "img-avatar.png"
+          ]
+        }
+      }
+    }
+  }
+}

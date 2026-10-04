@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>作品 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
   <div class="bubbles" aria-hidden="true">
@@ -88,13 +88,26 @@
         <p id="work-intro"></p>
       </section>
     </article>
+
+    <nav class="work-pager" id="work-pager">
+      <a id="prev-link" class="pager-btn" href="#" aria-label="上一个">‹</a>
+      <a id="next-link" class="pager-btn" href="#" aria-label="下一个">›</a>
+    </nav>
   </main>
 
   <script>
+    // 每个作品的类型（板块），用于「上一个/下一个」只在同类型内浏览
     var works = {
-      "速写": { img: "img-sketch-hand.jpg", intro: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在" },
-      "涂鸦": { img: "img-doodle-math.jpg", intro: "emmm，我想想……" },
-      "冲鸭": { img: "img-duck-chong.jpg", intro: "冲鸭！继续加油" }
+      "手": { type: "doodle", img: "img-hand.jpg", intro: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在" },
+      "涂鸦": { type: "doodle", img: "img-doodle-math.jpg", intro: "emmm，我想想……" },
+      "冲鸭": { type: "doodle", img: "img-chongya.jpg", intro: "冲鸭！继续加油" },
+      "线条狗": { type: "doodle", img: "img-dog-line.jpg", intro: "被阳光晾晒的小狗，云朵也化作小狗的模样，把可爱晒得蓬松柔软。" },
+      "下一个灵气复苏时代": { type: "essay", img: "", intro: "非洲大地可以等下一个雨季，但人的一生那么短，还能等到下一个灵气复苏的时代吗？" }
+    };
+    // 按类型分组的有序标题列表（顺序即浏览顺序），用于同类型翻页
+    var TYPE_ORDER = {
+      doodle: ["手", "涂鸦", "冲鸭", "线条狗"],
+      essay: ["下一个灵气复苏时代"]
     };
     var params = new URLSearchParams(window.location.search);
     var t = params.get("title");
@@ -109,10 +122,47 @@
     if (t && works[t]) {
       var w = works[t];
       document.getElementById("work-title").textContent = t;
-      document.getElementById("work-img").src = w.img;
-      document.getElementById("work-img").alt = t;
+      var imgEl = document.getElementById("work-img");
+      if (w.img) {
+        imgEl.style.display = "";   // 有图：正常显示
+        imgEl.src = w.img;
+        imgEl.alt = t;
+      } else {
+        imgEl.style.display = "none"; // 无图随笔：隐藏图片位
+      }
       document.getElementById("work-intro").textContent = w.intro;
       document.getElementById("work-detail").hidden = false;
+
+      // —— 同类型内「上一个/下一个」浏览 ——
+      var type = w.type;
+      var list = TYPE_ORDER[type] || [];
+      var idx = list.indexOf(t);
+      var prevLink = document.getElementById("prev-link");
+      var nextLink = document.getElementById("next-link");
+      var pager = document.getElementById("work-pager");
+      // 列表为空或只有当前一项：整个翻页栏隐藏
+      if (list.length <= 1) {
+        pager.style.display = "none";
+      } else {
+        pager.style.display = "";
+        var base = "work.html?cat=" + type;
+        // 上一个：idx 是 0（第一项）时禁用
+        if (idx > 0) {
+          prevLink.href = base + "&title=" + encodeURIComponent(list[idx - 1]);
+          prevLink.classList.remove("is-disabled");
+        } else {
+          prevLink.removeAttribute("href");
+          prevLink.classList.add("is-disabled");
+        }
+        // 下一个：idx 是最后一项时禁用
+        if (idx >= 0 && idx < list.length - 1) {
+          nextLink.href = base + "&title=" + encodeURIComponent(list[idx + 1]);
+          nextLink.classList.remove("is-disabled");
+        } else {
+          nextLink.removeAttribute("href");
+          nextLink.classList.add("is-disabled");
+        }
+      }
     } else {
       document.getElementById("not-found").hidden = false;
     }

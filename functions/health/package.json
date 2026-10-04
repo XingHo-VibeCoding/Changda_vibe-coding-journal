@@ -1,0 +1,7 @@
+{
+  "name": "health",
+  "version": "1.0.0",
+  "description": "health check cloud function for /api/health",
+  "main": "index.js",
+  "dependencies": {}
+}
