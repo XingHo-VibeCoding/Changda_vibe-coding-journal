@@ -60,11 +60,23 @@ body {
 }
 
 section h2 {
+  position: relative;
   font-size: 18px;
   font-weight: 600;
   margin: 32px 0 12px;
-  padding-left: 10px;
-  border-left: 4px solid var(--accent);
+  padding-left: 28px;
+}
+/* 圣巢标志装饰：标题左侧图标 */
+section h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.31em;
+  height: 2em;
+  background: url("img-seal.png?v=6") no-repeat center / contain;
+  filter: drop-shadow(0 0 4px rgba(47, 155, 214, .45)) drop-shadow(0 0 10px rgba(47, 155, 214, .25));
 }
 
 .contact ul {
@@ -234,18 +246,43 @@ a:hover { text-decoration: underline; }
   margin: 16px 0 12px;
 }
 .section-head h2 {
+  position: relative;
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  padding-left: 10px;
-  border-left: 4px solid var(--accent);
+  padding-left: 28px;
   color: var(--text);
 }
-.more {
-  font-size: 14px;
-  color: var(--accent-dark);
+/* 圣巢标志装饰：标题左侧图标 */
+.section-head h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.31em;
+  height: 2em;
+  background: url("img-seal.png?v=6") no-repeat center / contain;
+  filter: drop-shadow(0 0 4px rgba(47, 155, 214, .45)) drop-shadow(0 0 10px rgba(47, 155, 214, .25));
 }
-.more:hover { color: var(--accent); }
+/* 更多链接：大黄蜂图标，低透明度呼吸，悬停亮起蓝色光晕 */
+.more {
+  display: inline-block;
+  width: 1.82em;
+  height: 2.3em;
+  background: url("img-hornet.png") no-repeat center / contain;
+  opacity: .45;
+  animation: hornet-breathe 3.2s ease-in-out infinite;
+}
+.more:hover {
+  animation: none;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(47, 155, 214, .8)) drop-shadow(0 0 12px rgba(47, 155, 214, .45));
+}
+@keyframes hornet-breathe {
+  0%, 100% { opacity: .35; }
+  50% { opacity: .6; }
+}
 
 /* === 分享列表页（share.html） === */
 .share-head h1 {
@@ -515,8 +552,6 @@ a:hover { text-decoration: underline; }
   margin: 0 0 16px;
   font-size: 18px;
   font-weight: 600;
-  padding-left: 10px;
-  border-left: 4px solid var(--accent);
 }
 
 .avatar {
@@ -570,12 +605,15 @@ a:hover { text-decoration: underline; }
   text-align: center;
   color: var(--text);
   text-decoration: none;
-  transition: border-color .15s, transform .15s;
+  transition: border-color .4s, transform .4s, box-shadow .4s;
 }
 .cat:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
   text-decoration: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .55),
+              0 0 14px rgba(190, 220, 235, .5),
+              0 0 30px rgba(210, 232, 244, .35);
 }
 .cat-icon {
   display: inline-flex;
@@ -822,14 +860,33 @@ a:hover { text-decoration: underline; }
   padding: 24px;
   margin-bottom: 24px;
   box-shadow: 0 8px 28px rgba(8, 24, 48, .1);
+  transition: box-shadow .4s;
+}
+.panel:hover {
+  box-shadow: 0 8px 28px rgba(8, 24, 48, .1),
+              0 0 0 1px rgba(255, 255, 255, .55),
+              0 0 16px rgba(190, 220, 235, .5),
+              0 0 34px rgba(210, 232, 244, .35);
 }
 .panel-title {
+  position: relative;
   margin: 0 0 16px;
   font-size: 18px;
   font-weight: 600;
-  padding-left: 10px;
-  border-left: 4px solid var(--accent);
+  padding-left: 28px;
   color: var(--text);
+}
+/* 圣巢标志装饰：标题左侧图标 */
+.panel-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.31em;
+  height: 2em;
+  background: url("img-seal.png?v=6") no-repeat center / contain;
+  filter: drop-shadow(0 0 4px rgba(47, 155, 214, .45)) drop-shadow(0 0 10px rgba(47, 155, 214, .25));
 }
 .intro-text p {
   margin: 0 0 12px;

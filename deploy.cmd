@@ -20,6 +20,8 @@ copy img-chongya.jpg dist\ >nul
 copy img-dog-line.jpg dist\ >nul
 copy img-doodle-math.jpg dist\ >nul
 copy img-hand.jpg dist\ >nul
+copy img-hornet.png dist\ >nul
+copy img-seal.png dist\ >nul
 
 echo [2/2] Deploying to CloudBase (env: changda-vibecoding-d8c0v64bdbf7c) ...
 "C:\Users\Changda\.workbuddy\binaries\node\versions\22.22.2-5\node.exe" "C:\Users\Changda\.workbuddy\binaries\node\versions\22.22.2-5\node_modules\@cloudbase\cli\bin\tcb" hosting deploy dist -e changda-vibecoding-d8c0v64bdbf7c --verify
