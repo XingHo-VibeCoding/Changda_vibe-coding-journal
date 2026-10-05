@@ -64,6 +64,73 @@
 
 ---
 
+## 数据模型（Day 16 起）
+
+> 本节是数据库表结构的契约来源。前端/接口读写的数据字段，一律以这里为准。
+> 建表脚本见 `db/schema.sql`，示例数据见 `db/seed.sql`（可重复执行）。
+
+### 数据库实现说明
+
+| 项 | 值 |
+|----|-----|
+| 数据库类型 | **PostgreSQL**（CloudBase「SQL 型数据库」，控制台标题：PostgreSQL 管理） |
+| Schema | `public` |
+| 建表方式 | `db/schema.sql`（先 DROP 再 CREATE，可重复执行） |
+| 种子数据 | `db/seed.sql`（先 DELETE 再 INSERT，可重复执行） |
+| 执行方式 | 控制台「SQL 编辑器」粘贴执行，或 CLI：`tcb db execute -e <envId> --sql "<SQL>"` |
+
+> 术语提示：`desc` 是 SQL 保留字（`ORDER BY ... DESC`），故数据库列名用 `description`，
+> 接口层（Day 17 起）映射回前端惯用的 `desc` 字段名。
+
+### 两张表分别存什么、靠哪个字段关联
+
+| 表 | 存什么 | 角色 |
+|----|--------|------|
+| `users`（账号表） | 登录凭据：谁可以登录后台 | 「一」的一方 |
+| `works`（作品表） | 分享区四板块作品（涂鸦/随笔/合影/资源） | 「多」的一方 |
+
+**关联字段**：`works.user_id` → `users.id`（外键）。一个账号可以有多条作品，作品归属某个账号。
+
+### 表 1：users（账号表）
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| `id` | BIGINT | 主键、IDENTITY 自增 | 用户主键 |
+| `username` | VARCHAR(32) | 唯一、非空 | 登录用户名（不开放注册，仅本人一个账号） |
+| `password_hash` | VARCHAR(255) | 非空 | 密码哈希（加盐，绝不存明文） |
+| `created_at` | TIMESTAMP | 默认 `now()` | 账号创建时间 |
+
+> 种子数据说明：`users` 表含 1 个真实账号（`changda`）+ 4 个测试账号（`test_user_1~4`，密码同为占位值）。
+> 测试账号仅为满足「每张核心表 select ≥5 行」的验证标准，业务上系统只有本人一个账号；后续可清理。
+
+### 表 2：works（作品表）
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| `id` | BIGINT | 主键、IDENTITY 自增 | 作品主键 |
+| `user_id` | BIGINT | 非空、外键 → `users.id` | 所属账号（★关联字段） |
+| `category` | VARCHAR(16) | 非空 | 板块：`doodle`/`essay`/`photo`/`resource` |
+| `title` | VARCHAR(120) | 非空 | 作品标题 |
+| `description` | TEXT | 可空 | 作品简介（随笔为正文，可较长）；接口层映射为 `desc` |
+| `img` | VARCHAR(255) | 可空 | 图片文件名（涂鸦/随笔/合影用，资源类可空） |
+| `link` | VARCHAR(2048) | 可空 | 外链网址（仅资源板块使用） |
+| `status` | VARCHAR(8) | 非空、默认 `public` | 可见性：`public` 公开 / `hidden` 隐藏 |
+| `created_at` | TIMESTAMP | 默认 `now()` | 作品发布时间 |
+
+索引：`idx_works_user (user_id)`、`idx_works_category (category)`。
+外键行为：`ON DELETE CASCADE ON UPDATE CASCADE`（删除账号时其作品一并删除）。
+
+**板块与字段对应**（对齐 `data.js` 原 mock 结构）：
+
+| 板块 | category 值 | 用到的字段 |
+|------|-------------|-----------|
+| 涂鸦 | `doodle` | title / desc / img |
+| 随笔 | `essay` | title / desc / img（可空） |
+| 合影 | `photo` | title / desc / img |
+| 资源 | `resource` | title / desc / link |
+
+---
+
 ## 后续接口（占位）
 
-Day 16–20 计划新增：登录/账号接口、分享列表接口、数据读写接口。新增时按上面的格式追加：用途 / 请求 / 成功响应 / 失败情况 / 实现备注。
+Day 17 起新增：登录/账号接口、分享列表接口、数据读写接口。新增时按上面的格式追加：用途 / 请求 / 成功响应 / 失败情况 / 实现备注。
