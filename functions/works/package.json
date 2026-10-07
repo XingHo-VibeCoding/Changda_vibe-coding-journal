@@ -1,0 +1,7 @@
+{
+  "name": "works",
+  "version": "1.0.0",
+  "description": "GET /api/works 分享列表读接口（HTTP 函数，监听 9000）",
+  "main": "index.js",
+  "dependencies": {}
+}

@@ -1,5 +1,16 @@
 {
   "envId": "changda-vibecoding-d8c0v64bdbf7c",
+  "functions": [
+    {
+      "name": "works",
+      "timeout": 10,
+      "memorySize": 256,
+      "description": "GET /api/works 分享列表读接口（Day 17）",
+      "envVariables": {
+        "CLOUDBASE_ENV_ID": "changda-vibecoding-d8c0v64bdbf7c"
+      }
+    }
+  ],
   "framework": {
     "name": "changda-homepage",
     "plugins": {

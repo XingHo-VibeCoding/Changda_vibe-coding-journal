@@ -131,6 +131,143 @@
 
 ---
 
+## 2. GET /api/works —— 分享列表读接口
+
+**用途**：给前端分享区提供作品列表。从 PostgreSQL 的 `works` 表读取「公开」作品，返回前做字段翻译（数据库 `description` → 前端 `desc`）。
+
+### 请求
+
+- 方法：`GET`
+- 路径：`/api/works`
+- 参数（均可选）：
+  | 参数 | 类型 | 说明 |
+  |------|------|------|
+  | `category` | string | 按板块筛选：`doodle`/`essay`/`photo`/`resource`，不传则返回全部 |
+  | `limit` | number | 返回条数上限，不传则返回全部 |
+- 请求头：无需鉴权（公开只读）
+
+### 成功响应
+
+- 状态码：`200`
+- Content-Type：`application/json; charset=utf-8`
+
+```json
+{
+  "ok": true,
+  "count": 7,
+  "data": [
+    {
+      "id": 1,
+      "category": "doodle",
+      "title": "手",
+      "desc": "速写课第一节，画自己的手，感觉还不错，看来美术功底还在",
+      "img": "img-hand.jpg",
+      "link": null
+    }
+  ]
+}
+```
+
+**字段说明**：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `ok` | boolean | 固定 `true` 表示成功 |
+| `count` | number | 本次返回的条数 |
+| `data` | array | 作品数组，每项字段：`id`（作品ID）、`category`（板块）、`title`（标题）、`desc`（简介，★由数据库 `description` 翻译而来）、`img`（图片文件名，可 null）、`link`（外链，可 null） |
+
+> **关键约定（Day 17 思考题答案）**：数据库列名是 `description`（`desc` 是 SQL 保留字），
+> 接口返回时翻译成 `desc`，与前端 `data.js` 的旧字段名对齐。所以「接口返回里和表对不上的那一项」就是 **`desc`（接口）↔ `description`（表）**。
+
+### 失败情况
+
+| 现象 | 可能原因 | 处理 |
+|------|---------|------|
+| 返回 `{"ok":false,"error":"服务端未配置 API Key"}` | 函数环境变量 `CLOUDBASE_API_KEY` 未配置 | 控制台 → 云函数 → works → 函数配置 → 环境变量，添加 Key |
+| 返回 `{"ok":false,"error":"数据库读取失败"}` | REST 网关返回非 200 | 查看响应 `detail` 字段的原始错误 |
+| 404 / INVALID_PATH | HTTP 访问服务路由未配置 | 确认「HTTP 访问服务」有 `/api/works` → `works` 的映射 |
+
+### 实现备注
+
+- 函数类型：HTTP 型（Web 函数），监听 `9000` 端口，`scf_bootstrap` 启动（`node index.js`）
+- 代码位置：`functions/works/index.js`（含 `scf_bootstrap`、`package.json`）
+- 数据来源：通过 REST 网关 `https://<envId>.api.tcloudbasegateway.com/v1/rdb/rest/works`，以 API Key（service_role）鉴权
+- 只返回 `status=public` 的公开作品（`hidden` 不对外）
+- 环境变量：`CLOUDBASE_API_KEY`（函数环境变量注入，不写死、不进 git）
+
+---
+
+## 3. POST /api/works —— 作品写入接口（新增作品）
+
+**用途**：给登录后的后台「上传作品」用。向 `works` 表新增一条作品，成功后返回新作品的 id。
+
+### 请求
+
+- 方法：`POST`
+- 路径：`/api/works`
+- 请求头：`Content-Type: application/json`
+- 请求体（JSON）：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `category` | string | ✅ 必填 | 板块：`doodle`/`essay`/`photo`/`resource`（白名单校验） |
+| `title` | string | ✅ 必填 | 作品标题 |
+| `desc` | string | 可空 | 简介（接口层字段名，落库时映射为 `description`） |
+| `img` | string | 可空 | 图片文件名（资源板块忽略） |
+| `link` | string | 可空 | 外链网址（仅资源板块使用） |
+
+```json
+{
+  "category": "essay",
+  "title": "下一个灵气复苏时代",
+  "desc": "非洲大地可以等下一个雨季……",
+  "img": null,
+  "link": null
+}
+```
+
+### 成功响应
+
+- 状态码：`201`
+- Content-Type：`application/json; charset=utf-8`
+
+```json
+{
+  "ok": true,
+  "id": 10,
+  "category": "essay",
+  "title": "下一个灵气复苏时代"
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `ok` | boolean | 固定 `true` |
+| `id` | number | 新作品的数据库主键（自增） |
+| `category` / `title` | string | 回显写入的板块与标题 |
+
+### 失败情况（含「防重复提交」与「错误输入」的防护）
+
+| 现象 | 状态码 | 说明 |
+|------|--------|------|
+| `{"ok":false,"error":"该作品已存在，请勿重复提交","duplicateId":10}` | 409 | ★防重复提交：同 `category`+`title` 已存在，拒绝写入 |
+| `{"ok":false,"error":"缺少必填字段：标题（title）"}` | 400 | ★错误输入：缺必填字段，中文提示 |
+| `{"ok":false,"error":"板块不合法，应为 doodle / essay / photo / resource 之一"}` | 400 | ★错误输入：`category` 不在白名单，中文提示 |
+| `{"ok":false,"error":"请求体不是合法的 JSON"}` | 400 | 请求体解析失败 |
+| `{"ok":false,"error":"服务端未配置 API Key"}` | 500 | 函数环境变量 `CLOUDBASE_API_KEY` 缺失 |
+| `{"ok":false,"error":"数据库写入失败", ...}` | 非 2xx | REST 网关写入失败，`detail` 含原始错误 |
+
+### 实现备注
+
+- 函数类型：HTTP 型（Web 函数），与 GET 共用 `functions/works/index.js`
+- 归属账号：`user_id` 固定为 `1`（`changda`，系统唯一账号、不开放注册）；登录鉴权留待后续
+- 字段映射：接口 `desc` → 数据库 `description`（与 Day 17 读接口相反方向）
+- 板块字段规则：`resource` 板块用 `link`、其余用 `img`
+- **防重复方式**：应用层查重（POST 前按 `category+title` 查），未加唯一约束（避免 Day 18 改表结构）
+- 服务端日志：每次写入 `console.log` 打一条（余力加练，便于排查）
+
+---
+
 ## 后续接口（占位）
 
-Day 17 起新增：登录/账号接口、分享列表接口、数据读写接口。新增时按上面的格式追加：用途 / 请求 / 成功响应 / 失败情况 / 实现备注。
+Day 19 起新增：登录/账号接口、PATCH（修改）、DELETE（删除，第 4 周）。新增时按上面的格式追加：用途 / 请求 / 成功响应 / 失败情况 / 实现备注。
