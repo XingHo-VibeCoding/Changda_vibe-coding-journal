@@ -78,6 +78,7 @@
     <header class="share-head">
       <h1>分享</h1>
       <p class="share-sub">我公开的作品与资源</p>
+      <p id="update-time" class="share-update" hidden></p>
     </header>
 
     <nav class="filter">
@@ -95,8 +96,12 @@
     <div id="list" class="list"></div>
   </main>
 
-  <script src="data.js?v=25"></script>
   <script>
+    // ===== 数据源：从公网接口 /api/works 拉取数据库真实数据（Day 20）=====
+    // 接口返回 { ok, count, data:[{id, category, title, desc, img, link}] }
+    // 前端板块类型用 resource 缩写为 res（历史原因），这里做一次映射。
+    var API_BASE = "https://changda-vibecoding-d8c0v64bdbf7c-1500185360.ap-shanghai.app.tcloudbase.com";
+
     var loadingEl = document.getElementById("state-loading");
     var emptyEl = document.getElementById("state-empty");
     var errorEl = document.getElementById("state-error");
@@ -104,23 +109,28 @@
     var btns = document.querySelectorAll(".filter-btn");
     var filter = "all";
 
-    // 把四个板块合成一个列表（每项带上自己的类型标识）
-    function getItems() {
+    // 后端 category → 前端 type 的映射（resource 在前端叫 res）
+    function toType(category) {
+      return category === "resource" ? "res" : category;
+    }
+
+    // 把接口返回的 data 数组合成前端列表（每项带上自己的类型标识）
+    function getItemsFromApi(data) {
       var items = [];
-      SITE_DATA.doodles.forEach(function (w) {
-        items.push({ type: "doodle", title: w.title, desc: w.desc, img: w.img });
-      });
-      SITE_DATA.essays.forEach(function (e) {
-        items.push({ type: "essay", title: e.title, desc: e.desc, img: e.img || "" });
-      });
-      SITE_DATA.photos.forEach(function (p) {
-        items.push({ type: "photo", title: p.title, desc: p.desc, img: p.img });
-      });
-      SITE_DATA.resources.forEach(function (r) {
-        items.push({ type: "res", title: r.title, desc: r.desc, link: r.link || "" });
+      (data || []).forEach(function (w) {
+        items.push({
+          type: toType(w.category),
+          title: w.title,
+          desc: w.desc,
+          img: w.img || "",
+          link: w.link || ""
+        });
       });
       return items;
     }
+
+    // 存一份已拉到的原始数据（供切换筛选时复用，不用每次都请求）
+    var cachedItems = null;
 
     function show(name) {
       loadingEl.hidden = name !== "loading";
@@ -138,7 +148,7 @@
     };
 
     function render() {
-      var items = getItems().filter(function (i) {
+      var items = (cachedItems || []).filter(function (i) {
         if (filter === "all") return true;
         return i.type === filter;
       });
@@ -203,9 +213,30 @@
     } else if (state === "empty") {
       show("empty");
     } else {
-      // 模拟「加载中」→ 短暂延迟后渲染出列表
+      // —— 真实加载：fetch 公网接口 → 成功渲染 / 失败显示错误态 ——
       show("loading");
-      setTimeout(render, 400);
+      fetch(API_BASE + "/api/works")
+        .then(function (resp) {
+          if (!resp.ok) { throw new Error("HTTP " + resp.status); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (!json || json.ok !== true) { throw new Error("接口返回异常"); }
+          cachedItems = getItemsFromApi(json.data);
+          render();
+          // 余力加练：显示「最后更新时间」（记录数据成功加载的时刻）
+          var updateEl = document.getElementById("update-time");
+          var now = new Date();
+          var pad = function (n) { return n < 10 ? "0" + n : n; };
+          updateEl.textContent = "数据最后更新于 " + now.getFullYear() + "-" +
+            pad(now.getMonth() + 1) + "-" + pad(now.getDate()) + " " +
+            pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+          updateEl.hidden = false;
+        })
+        .catch(function (err) {
+          console.error("拉取作品失败：", err);
+          show("error");
+        });
     }
   </script>
 </body>

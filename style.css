@@ -298,6 +298,12 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
 }
+.share-update {
+  margin: -10px 0 16px;
+  color: rgba(255, 255, 255, .62);
+  font-size: 12px;
+  text-shadow: 0 1px 5px rgba(8, 24, 48, .4);
+}
 
 .filter {
   display: flex;
