@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>分享 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=49">
+  <link rel="stylesheet" href="style.css?v=64">
 </head>
 <body>
   <div class="bubbles" aria-hidden="true">
@@ -123,7 +123,8 @@
           title: w.title,
           desc: w.desc,
           img: w.img || "",
-          link: w.link || ""
+          link: w.link || "",
+          file: w.file || ""
         });
       });
       return items;
@@ -137,6 +138,15 @@
       emptyEl.hidden = name !== "empty";
       errorEl.hidden = name !== "error";
       listEl.hidden = name !== "list";
+    }
+
+    // 把裸报错翻译成中文人话（Day 23）：网络层错误转友好提示，业务错误保留。
+    function toHumanError(err) {
+      var msg = (err && err.message) || "";
+      if (/failed to fetch|network|load failed|fetch/i.test(msg)) {
+        return "网络连接失败，请检查网络后重试";
+      }
+      return "加载出错了，请稍后再试";
     }
 
     // 四个板块对应的中文标签
@@ -171,6 +181,10 @@
         var thumb = i.img
           ? '<img class="list-thumb" src="' + i.img + '" alt="' + i.title + '">'
           : "";
+        // 资源类带文档：额外展示「下载文档」按钮（阻止外层 a 跳转）
+        var fileBtn = (i.type === "res" && i.file)
+          ? '<span class="tag tag-file" data-file="' + i.file + '">下载文档</span>'
+          : "";
         html +=
           '<a class="list-item" href="' + href + '">' +
             thumb +
@@ -178,10 +192,21 @@
               '<h3 class="list-title">' + i.title + '</h3>' +
               '<p class="list-desc">' + i.desc + '</p>' +
               '<span class="tag">' + tag + '</span>' +
+              fileBtn +
             '</div>' +
           '</a>';
       });
       listEl.innerHTML = html;
+
+      // 「下载文档」点击：跳转文档地址，阻止触发外层卡片的跳转
+      listEl.querySelectorAll(".tag-file").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(el.getAttribute("data-file"), "_blank");
+        });
+      });
+
       show("list");
     }
 
@@ -235,6 +260,8 @@
         })
         .catch(function (err) {
           console.error("拉取作品失败：", err);
+          // 网络错误给出更明确的中文提示，其余用默认错误文案
+          errorEl.textContent = toHumanError(err);
           show("error");
         });
     }

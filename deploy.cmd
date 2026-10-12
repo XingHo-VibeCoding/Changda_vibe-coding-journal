@@ -12,6 +12,7 @@ copy index.html dist\ >nul
 copy share.html dist\ >nul
 copy work.html dist\ >nul
 copy login.html dist\ >nul
+copy admin.html dist\ >nul
 copy style.css dist\ >nul
 copy data.js dist\ >nul
 copy img-avatar.jpg dist\ >nul
@@ -24,7 +25,7 @@ copy img-hornet.png dist\ >nul
 copy img-seal.png dist\ >nul
 
 echo [2/2] Deploying to CloudBase (env: changda-vibecoding-d8c0v64bdbf7c) ...
-"C:\Users\Changda\.workbuddy\binaries\node\versions\22.22.2-5\node.exe" "C:\Users\Changda\.workbuddy\binaries\node\versions\22.22.2-5\node_modules\@cloudbase\cli\bin\tcb" hosting deploy dist -e changda-vibecoding-d8c0v64bdbf7c --verify
+"C:\Users\Changda\.workbuddy\binaries\node\versions\22.22.2-6\node.exe" "C:\Users\Changda\.workbuddy\binaries\node\workspace\node_modules\@cloudbase\cli\bin\tcb" hosting deploy dist -e changda-vibecoding-d8c0v64bdbf7c --verify
 
 echo.
 echo ============================================

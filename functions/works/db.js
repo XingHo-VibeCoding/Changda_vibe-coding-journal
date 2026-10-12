@@ -1,17 +1,21 @@
 // ============================================================
 // 数据访问层（DAO）：db.js
 // Day 19 从 index.js 拆出来的「数据库的事」
+// Day 22 新增管理后台三个函数：listAllWorks / updateWork / deleteWork
 //
 // 本文件只管「数据怎么进出」，不管「接口长什么样」：
 //   - 拼 REST 网关查询串
-//   - fetch 查重 / 读列表 / 插入
+//   - fetch 查重 / 读列表 / 插入 / 修改 / 删除
 //   - 拿 API Key 做 Bearer 鉴权
 //   - description ↔ desc 字段翻译
 //
-// 对外暴露三个函数（给 index.js 调用）：
-//   listWorks({ category, limit })  → GET 读公开作品列表
+// 对外暴露六个函数（给 index.js 调用）：
+//   listWorks({ category, limit })  → GET 读公开作品列表（前台分享区）
+//   listAllWorks()                  → GET 读全部作品（管理后台，含 hidden）
 //   findDuplicate(category, title)  → POST 查重
 //   insertWork(fields)              → POST 写一条新作品
+//   updateWork(id, fields)          → PATCH 修改一条作品
+//   deleteWork(id)                  → DELETE 物理删除一条作品
 // ============================================================
 
 // 环境变量（部署时配置，绝不写死、不进 git）
@@ -48,7 +52,9 @@ function toApiRow(row) {
     title: row.title,
     desc: row.description,
     img: row.img || null,
-    link: row.link || null
+    link: row.link || null,
+    file: row.file || null,
+    status: row.status || "public"
   };
 }
 
@@ -107,7 +113,7 @@ async function findDuplicate(category, title) {
 }
 
 // —— 写入一条新作品（POST 用）——
-// fields：{ category, title, description, img, link }
+// fields：{ category, title, description, img, link, file }
 // 返回：Promise<Object>，包含新作品的 id、category、title
 async function insertWork(fields) {
   const insertRes = await fetch(GW, {
@@ -123,6 +129,7 @@ async function insertWork(fields) {
       description: fields.description || null,   // 数据库列名 description
       img: fields.img || null,
       link: fields.link || null,
+      file: fields.file || null,                  // 文档地址（资源类附件）
       status: "public"                             // 默认公开
     })
   });
@@ -148,10 +155,101 @@ async function insertWork(fields) {
   };
 }
 
+// —— 读全部作品（管理后台用）：含 hidden，不按 status 过滤 ——
+// 返回：Promise<Array>，每项已是接口字段（含 desc、status）
+async function listAllWorks() {
+  const qs = "select=*";
+
+  const r = await fetch(GW + "?" + qs, {
+    method: "GET",
+    headers: authHeaders()
+  });
+
+  if (!r.ok) {
+    const body = await r.text();
+    log("读全部作品失败", r.status, body);
+    const err = new Error("数据库读取失败");
+    err.status = r.status;
+    err.detail = body;
+    throw err;
+  }
+
+  const rows = await r.json();
+  return rows.map(toApiRow);
+}
+
+// —— 修改一条作品（PATCH 用）——
+// id：作品主键；fields：{ category, title, description, img, link, file, status }
+// 返回：Promise<Object>，包含修改后作品的 id、category、title
+async function updateWork(id, fields) {
+  // 只允许更新白名单字段，避免误改 user_id / created_at
+  const patch = {};
+  if (fields.category !== undefined) patch.category = fields.category;
+  if (fields.title !== undefined) patch.title = fields.title;
+  if (fields.description !== undefined) patch.description = fields.description || null;
+  if (fields.img !== undefined) patch.img = fields.img || null;
+  if (fields.link !== undefined) patch.link = fields.link || null;
+  if (fields.file !== undefined) patch.file = fields.file || null;
+  if (fields.status !== undefined) patch.status = fields.status;
+
+  const r = await fetch(GW + "?id=eq." + id, {
+    method: "PATCH",
+    headers: authHeaders({
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"   // 返回更新后的完整行
+    }),
+    body: JSON.stringify(patch)
+  });
+
+  if (!r.ok) {
+    const errBody = await r.text();
+    log("修改失败", r.status, errBody);
+    const err = new Error("数据库修改失败");
+    err.status = r.status;
+    err.detail = errBody;
+    throw err;
+  }
+
+  const updated = await r.json();
+  const row = updated && (updated[0] || updated);
+  log("修改作品成功", JSON.stringify({ id: id, category: fields.category, title: fields.title }));
+
+  return {
+    id: id,
+    category: row.category,
+    title: row.title
+  };
+}
+
+// —— 物理删除一条作品（DELETE 用，不可恢复）——
+// 返回：Promise<Object>，包含被删除作品的 id
+async function deleteWork(id) {
+  const r = await fetch(GW + "?id=eq." + id, {
+    method: "DELETE",
+    headers: authHeaders()
+  });
+
+  if (!r.ok) {
+    const errBody = await r.text();
+    log("删除失败", r.status, errBody);
+    const err = new Error("数据库删除失败");
+    err.status = r.status;
+    err.detail = errBody;
+    throw err;
+  }
+
+  log("删除作品成功", JSON.stringify({ id: id }));
+
+  return { id: id };
+}
+
 // 对外暴露（供 index.js require 使用）
 module.exports = {
   CATEGORIES: CATEGORIES,
   listWorks: listWorks,
+  listAllWorks: listAllWorks,
   findDuplicate: findDuplicate,
-  insertWork: insertWork
+  insertWork: insertWork,
+  updateWork: updateWork,
+  deleteWork: deleteWork
 };

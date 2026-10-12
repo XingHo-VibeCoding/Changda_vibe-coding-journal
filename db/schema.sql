@@ -84,6 +84,10 @@ CREATE TABLE "works" (
   -- 外链网址。仅资源板块使用，其余为 NULL。VARCHAR(2048)：URL 可能很长，2048 是保守上限。
   "link" VARCHAR(2048),
 
+  -- 文档地址。资源板块可上传的附件（PDF/Word 等）的云存储公开 URL。
+  -- 其余板块为 NULL。与 img（图片）区分：img 存图片地址，file 存可下载的文档地址。
+  "file" VARCHAR(2048),
+
   -- 可见性状态，对应 PRD 8.2「隐藏 vs 删除」：
   --   public = 公开（进分享列表）；hidden = 隐藏（仍存库，前台不显示，可恢复）。
   --   「删除」是物理移除整行，不靠状态字段表达。
@@ -106,5 +110,6 @@ COMMENT ON COLUMN "works"."title"      IS '作品标题';
 COMMENT ON COLUMN "works"."description" IS '作品简介（随笔为正文，可较长）';
 COMMENT ON COLUMN "works"."img"        IS '图片文件名（涂鸦/随笔/合影用，资源类可空）';
 COMMENT ON COLUMN "works"."link"       IS '外链网址（仅资源板块使用，其余为 NULL）';
+COMMENT ON COLUMN "works"."file"       IS '文档地址（资源板块可上传的 PDF/Word 等附件云存储 URL，其余为 NULL）';
 COMMENT ON COLUMN "works"."status"     IS '可见性：public公开/hidden隐藏';
 COMMENT ON COLUMN "works"."created_at" IS '作品发布时间';

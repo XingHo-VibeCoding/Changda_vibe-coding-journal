@@ -374,6 +374,16 @@ a:hover { text-decoration: underline; }
   color: var(--accent-dark);
   font-size: 12px;
 }
+/* 「下载文档」标签：做成可点击的按钮样式（Day 22 文档上传） */
+.tag-file {
+  margin-left: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background .15s;
+}
+.tag-file:hover { background: var(--accent-dark); }
 
 .state {
   padding: 48px 0;
@@ -395,51 +405,53 @@ a:hover { text-decoration: underline; }
   max-width: 360px;
   padding: 32px 28px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, .18);
-  border: 1px solid rgba(255, 255, 255, .4);
+  background: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(255, 255, 255, .8);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 32px rgba(8, 24, 48, .25);
+  box-shadow: 0 8px 32px rgba(8, 24, 48, .18);
 }
 .login-card h1 {
   margin: 0 0 4px;
   font-size: 26px;
   font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 8px rgba(8, 24, 48, .55);
+  color: var(--accent-dark);
+  text-shadow: none;
 }
 .login-card .login-sub {
   margin: 0 0 24px;
   font-size: 14px;
-  color: rgba(255, 255, 255, .82);
-  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+  color: rgba(29, 122, 184, .75);
+  text-shadow: none;
 }
 .login-card label {
   display: block;
   margin: 0 0 6px;
   font-size: 13px;
-  color: rgba(255, 255, 255, .9);
-  text-shadow: 0 1px 4px rgba(8, 24, 48, .5);
+  color: var(--accent-dark);
+  font-weight: 600;
+  text-shadow: none;
 }
 .login-card input {
   display: block;
   width: 100%;
   padding: 10px 12px;
   margin: 0 0 16px;
-  border: 1px solid rgba(255, 255, 255, .45);
+  border: 1px solid rgba(47, 155, 214, .45);
   border-radius: 8px;
   font-size: 14px;
-  color: #fff;
-  background: rgba(255, 255, 255, .12);
+  color: var(--accent-dark);
+  background: #fff;
   font-family: inherit;
 }
 .login-card input::placeholder {
-  color: rgba(255, 255, 255, .55);
+  color: rgba(29, 122, 184, .5);
 }
 .login-card input:focus {
   outline: none;
-  border-color: #fff;
-  background: rgba(255, 255, 255, .2);
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(47, 155, 214, .18);
 }
 .login-card .login-btn {
   display: block;
@@ -459,15 +471,28 @@ a:hover { text-decoration: underline; }
 .login-card .login-btn:hover {
   background: var(--accent-dark);
 }
+.login-card .login-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.login-error {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fdeaea;
+  color: #c0392b;
+  font-size: 13px;
+  text-shadow: none;
+}
 .login-hint {
   margin: 16px 0 0;
   text-align: center;
   font-size: 12px;
-  color: rgba(255, 255, 255, .7);
-  text-shadow: 0 1px 4px rgba(8, 24, 48, .5);
+  color: rgba(29, 122, 184, .8);
+  text-shadow: none;
 }
 .login-hint a {
-  color: #fff;
+  color: var(--accent-dark);
   text-decoration: underline;
 }
 
@@ -846,16 +871,21 @@ a:hover { text-decoration: underline; }
   padding: 16px 8px 28px;
 }
 .hero h1 {
-  margin: 0 0 10px;
-  font-size: 34px;
-  font-weight: 600;
+  margin: 0 0 12px;
+  font-size: 46px;
+  font-weight: 700;
+  /* 白→天蓝渐变文字：background-clip 实现，drop-shadow 代替 text-shadow（后者会让渐变文字发浑） */
+  background: linear-gradient(180deg, #ffffff 20%, #a8d8f5 65%, #5db4e8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: #fff;
-  text-shadow: 0 2px 10px rgba(8, 24, 48, .5);
+  filter: drop-shadow(0 2px 8px rgba(8, 24, 48, .45));
 }
 .hero-sub {
   margin: 0;
-  font-size: 16px;
-  color: rgba(255, 255, 255, .9);
+  font-size: 18px;
+  color: rgba(255, 255, 255, .92);
   text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
 }
 
@@ -951,6 +981,328 @@ a:hover { text-decoration: underline; }
     padding: 8px 14px;
     font-size: 14px;
   }
-  .hero h1 { font-size: 28px; }
+  .hero h1 { font-size: 36px; }
   .panel { padding: 20px 16px; }
+}
+
+/* === 管理后台（admin.html，Day 21 轻量版） === */
+/* 管理页标题放大、副标题降透明度（仅在 admin 页覆盖 share-head/share-sub） */
+.admin-page .share-head h1 {
+  font-size: 34px;
+}
+.admin-page .share-head .share-sub {
+  color: rgba(255, 255, 255, .55);
+}
+.admin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.admin-tag {
+  font-size: 14px;
+  color: rgba(255, 255, 255, .75);
+  text-shadow: 0 1px 6px rgba(8, 24, 48, .5);
+}
+.admin-tag b {
+  color: #fff;
+}
+/* 退出登录：浅红描边 + 白底，和主按钮区分 */
+.admin-logout {
+  padding: 7px 16px;
+  border: 1px solid rgba(224, 122, 122, .6);
+  border-radius: 8px;
+  background: #fff;
+  color: #c96a6a;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, border-color .15s;
+}
+.admin-logout:hover {
+  background: #fdf1f1;
+  border-color: rgba(224, 122, 122, .85);
+}
+.admin-tip {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .62);
+  text-shadow: 0 1px 5px rgba(8, 24, 48, .5);
+}
+.admin-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(47, 155, 214, .14);
+}
+/* 最后一条去掉分隔线，避免和容器底部重复 */
+.admin-item:last-child { border-bottom: none; margin-bottom: 0; }
+/* 管理列表专属缩略图（不复用分享页的 .list-thumb，避免布局耦合） */
+.admin-thumb {
+  flex: 0 0 64px;
+  align-self: center;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--accent-light);
+}
+/* 无图占位框：与缩略图同尺寸，撑住列对齐 */
+.admin-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: #f4f8fb;
+  border: 1px dashed #cfd9e2;
+  box-sizing: border-box;
+}
+.admin-item .list-body { flex: 1 1 220px; }
+/* 标题行内的标签去掉基础 .tag 的 8px 上边距（在 flex 居中行里会错位） */
+.admin-item-head .tag { margin-top: 0; }
+.admin-item .admin-actions {
+  flex: 0 0 auto;
+  flex-direction: row;
+  align-self: center;
+  margin-top: 0;
+}
+/* 列表里的文档链接：蓝色可点，避免默认紫色/白色混淆 */
+.admin-file-link {
+  color: var(--accent-dark);
+  word-break: break-all;
+}
+/* 文件名/外链简写：单行、超长省略号，鼠标悬停看全名 */
+.admin-file-name {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: bottom;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 内联编辑表单：占满整行，落在缩略图/按钮下方（嵌在白色作品卡片内，用浅色底+深色字） */
+.admin-edit-form {
+  flex-basis: 100%;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  border: 1px solid rgba(47, 155, 214, .35);
+  box-sizing: border-box;
+}
+/* 编辑表单内的标签和输入框：深蓝文字，浅色输入背景，确保在白卡片里清晰 */
+.admin-edit-form .admin-field label {
+  color: var(--accent-dark);
+  text-shadow: none;
+}
+.admin-edit-form .admin-input {
+  color: var(--accent-dark);
+  background: #fff;
+  border: 1px solid rgba(47, 155, 214, .4);
+}
+.admin-edit-form .admin-input::placeholder { color: rgba(29, 122, 184, .45); }
+.admin-edit-form .admin-input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(47, 155, 214, .15);
+}
+.admin-edit-form .admin-error {
+  background: #fdeaea;
+  color: #c0392b;
+  text-shadow: none;
+}
+.admin-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.admin-btn-save {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.admin-btn-save:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+.admin-btn-save:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* 上传按钮行：输入框 + 选择文件按钮横排（Day 22 上传功能） */
+.admin-upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.admin-upload-row .admin-input {
+  flex: 1;
+  min-width: 0;
+}
+.admin-btn-upload {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid #cfd9e2;
+  color: var(--muted);
+}
+.admin-btn-upload:hover {
+  background: #f4f8fb;
+  border-color: #b9c6d0;
+}
+.admin-btn-upload:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* === 管理后台：新增表单 + 操作按钮（Day 22） === */
+.admin-form {
+  margin: 0 0 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .85);
+  border: 1px solid rgba(255, 255, 255, .9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 24px rgba(47, 155, 214, .12);
+}
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.admin-field label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  text-shadow: none;
+}
+.admin-field-wide { grid-column: 1 / -1; }
+.admin-input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(47, 155, 214, .35);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--accent-dark);
+  background: #fff;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.admin-input::placeholder { color: rgba(29, 122, 184, .42); }
+.admin-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(47, 155, 214, .18), 0 0 12px rgba(47, 155, 214, .25);
+}
+select.admin-input option { color: #1a2b3c; }
+textarea.admin-input { resize: vertical; }
+.admin-submit {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, box-shadow .2s;
+}
+.admin-submit:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 0 16px rgba(47, 155, 214, .45);
+}
+.admin-submit:disabled { opacity: .6; cursor: not-allowed; }
+.admin-error {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fdeaea;
+  color: #c0392b;
+  font-size: 13px;
+  text-shadow: none;
+}
+
+.admin-item-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-item-head .list-title { margin-bottom: 0; font-weight: 700; }
+/* 简介文字降透明度，作为次要信息 */
+.admin-desc { color: rgba(44, 62, 80, .6); }
+.admin-meta { margin-top: 4px; font-size: 12px; overflow-wrap: anywhere; word-break: break-all; color: rgba(44, 62, 80, .55); }
+/* id 编号：浅灰小字，弱化视觉权重 */
+.admin-item .tag-id {
+  background: rgba(180, 195, 205, .25);
+  color: rgba(120, 140, 155, .9);
+  font-weight: 400;
+}
+.tag-hidden {
+  background: rgba(255, 200, 90, .2);
+  color: #ffe0a3;
+}
+.admin-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.admin-btn {
+  padding: 6px 16px;
+  border: 1px solid #cfd9e2;
+  border-radius: 8px;
+  background: #f4f8fb;
+  color: #1a2b3c;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, border-color .15s;
+}
+.admin-btn:hover {
+  background: #e3eef7;
+  border-color: var(--accent);
+}
+/* 编辑：浅蓝底 */
+.admin-btn-edit {
+  background: #eaf5fc;
+  border-color: rgba(47, 155, 214, .35);
+  color: var(--accent-dark);
+}
+.admin-btn-edit:hover {
+  background: #d6eafa;
+  border-color: var(--accent);
+}
+/* 下架/上架：浅灰底 */
+.admin-btn-toggle {
+  background: #f0f2f4;
+  border-color: #d5dbe0;
+  color: #5a6670;
+}
+.admin-btn-toggle:hover {
+  background: #e4e8eb;
+  border-color: #bfc8cf;
+}
+.admin-btn-danger {
+  border-color: #ecc8c8;
+  background: #fdf3f3;
+  color: #c07171;
+}
+.admin-btn-danger:hover {
+  background: #f8e4e4;
+  border-color: #e0a8a8;
 }

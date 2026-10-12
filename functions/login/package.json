@@ -1,0 +1,6 @@
+{
+  "name": "login",
+  "version": "1.0.0",
+  "description": "登录接口 /api/login（轻量版）",
+  "main": "index.js"
+}

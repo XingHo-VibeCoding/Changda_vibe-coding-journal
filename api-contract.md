@@ -148,8 +148,9 @@
 | `category` | VARCHAR(16) | 非空 | 板块：`doodle`/`essay`/`photo`/`resource` |
 | `title` | VARCHAR(120) | 非空 | 作品标题 |
 | `description` | TEXT | 可空 | 作品简介（随笔为正文，可较长）；接口层映射为 `desc` |
-| `img` | VARCHAR(255) | 可空 | 图片文件名（涂鸦/随笔/合影用，资源类可空） |
+| `img` | VARCHAR(255) | 可空 | 图片地址（涂鸦/随笔/合影用，资源类可空）；Day 22 起存云存储公开 URL |
 | `link` | VARCHAR(2048) | 可空 | 外链网址（仅资源板块使用） |
+| `file` | VARCHAR(2048) | 可空 | 文档地址（资源板块可上传的 PDF/Word 等附件云存储公开 URL，Day 22 新增） |
 | `status` | VARCHAR(8) | 非空、默认 `public` | 可见性：`public` 公开 / `hidden` 隐藏 |
 | `created_at` | TIMESTAMP | 默认 `now()` | 作品发布时间 |
 
@@ -163,7 +164,10 @@
 | 涂鸦 | `doodle` | title / desc / img |
 | 随笔 | `essay` | title / desc / img（可空） |
 | 合影 | `photo` | title / desc / img |
-| 资源 | `resource` | title / desc / link |
+| 资源 | `resource` | title / desc / link / file（文档附件，可空） |
+
+> Day 22 新增 `file` 字段：资源板块可上传文档附件（PDF/Word 等），存云存储公开 URL。
+> 前端 `admin.html` 通过 CloudBase Web SDK 直传云存储，拿到公开 URL 填入 img（图片）或 file（文档）。
 
 ---
 
@@ -304,6 +308,112 @@
 
 ---
 
-## 后续接口（占位）
+---
 
-Day 19 起新增：登录/账号接口、PATCH（修改）、DELETE（删除，第 4 周）。新增时按上面的格式追加：用途 / 请求 / 成功响应 / 失败情况 / 实现备注。
+## 4. PATCH /api/works —— 作品修改接口（改标题/简介/板块/图片/外链/可见性）
+
+**用途**：给登录后的后台「编辑」与「下架/上架」用。按 `id` 更新一条作品，只更新请求体里出现的字段。
+
+### 鉴权（Day 22 起，所有写接口统一要求）
+
+POST / PATCH / DELETE 三个写接口都需要请求头：
+
+```
+Authorization: Bearer <token>
+```
+
+`token` 与 `login` 云函数的环境变量 `LOGIN_TOKEN` 是同一个值（部署时两个函数配成一致）。未带、不匹配、或服务端未配置 token 时，一律返回 `401`：
+
+```json
+{ "ok": false, "error": "未登录或登录已失效，请重新登录" }
+```
+
+### 请求
+
+- 方法：`PATCH`
+- 路径：`/api/works`
+- 请求头：`Content-Type: application/json` + 鉴权头
+- 请求体（JSON，`id` 必填，其余按需传）：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | number | ✅ 必填 | 要修改的作品主键 |
+| `category` | string | 可空 | 板块（白名单校验，同 POST） |
+| `title` | string | 可空 | 新标题 |
+| `desc` | string | 可空 | 新简介（落库映射为 `description`） |
+| `img` | string | 可空 | 新图片文件名 |
+| `link` | string | 可空 | 新外链（仅资源板块） |
+| `status` | string | 可空 | 可见性：`public` / `hidden`（下架/上架即改此字段） |
+
+```json
+{ "id": 5, "title": "改后的标题", "status": "hidden" }
+```
+
+### 成功响应
+
+- 状态码：`200`
+
+```json
+{ "ok": true, "id": 5, "category": "essay", "title": "改后的标题" }
+```
+
+### 失败情况
+
+| 现象 | 状态码 | 说明 |
+|------|--------|------|
+| 未登录 / token 不匹配 | 401 | 见上方鉴权 |
+| `{"ok":false,"error":"缺少或非法的作品 id"}` | 400 | `id` 缺失或不是正整数 |
+| `{"ok":false,"error":"板块不合法，应为 doodle / essay / photo / resource 之一"}` | 400 | `category` 不在白名单 |
+| `{"ok":false,"error":"状态不合法，应为 public 或 hidden"}` | 400 | `status` 值非法 |
+| `{"ok":false,"error":"没有需要更新的字段"}` | 400 | 请求体里除 `id` 外没有可更新字段 |
+| `{"ok":false,"error":"数据库修改失败", ...}` | 非 2xx | REST 网关修改失败，`detail` 含原始错误 |
+
+### 实现备注
+
+- 与 GET/POST 共用 `functions/works/index.js`；数据访问层走 `db.updateWork(id, fields)`
+- 只更新白名单字段，`user_id` / `created_at` 不可改
+- 板块字段语义同 POST：`resource` 用 `link`、其余用 `img`
+
+---
+
+## 5. DELETE /api/works —— 作品删除接口（物理删除，不可恢复）
+
+**用途**：给登录后的后台「删除」用。按 `id` 物理删除一条作品（区别于「下架」=改 `status` 为 `hidden`，可逆）。
+
+### 请求
+
+- 方法：`DELETE`
+- 路径：`/api/works?id=<作品id>`
+- 请求头：鉴权头（见上）
+
+### 成功响应
+
+- 状态码：`200`
+
+```json
+{ "ok": true, "id": 5, "deleted": true }
+```
+
+### 失败情况
+
+| 现象 | 状态码 | 说明 |
+|------|--------|------|
+| 未登录 / token 不匹配 | 401 | 见上方鉴权 |
+| `{"ok":false,"error":"缺少或非法的作品 id"}` | 400 | `id` 缺失或不是正整数 |
+| `{"ok":false,"error":"数据库删除失败", ...}` | 非 2xx | REST 网关删除失败，`detail` 含原始错误 |
+
+### 实现备注
+
+- 物理删除整行，`status` 字段不参与（「删除」和「下架」语义严格区分，见 PRD 8.3）
+- 数据访问层走 `db.deleteWork(id)`
+
+---
+
+## 附：GET /api/works 的 `?all=1` 参数（Day 22 起）
+
+管理后台要看到「含 hidden 的全部作品」，GET 接口新增可选参数：
+
+- `GET /api/works?all=1` → 返回全部作品（含 `hidden`），供管理后台使用
+- 不带 `all`（或 `all≠1`）→ 行为不变，只返回 `status=public` 的公开作品
+
+管理后台读取本身**不带鉴权**（读是公开的，`hidden` 作品不外泄敏感字段），写操作才要求 token。

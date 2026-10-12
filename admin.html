@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 · 个人主页</title>
+  <link rel="stylesheet" href="style.css?v=64">
+  <!-- CloudBase Web SDK：用于图片/文档直传云存储（Day 22 上传功能） -->
+  <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+</head>
+<body class="admin-page">
+  <div class="bubbles" aria-hidden="true">
+    <i style="left:4%;width:9px;height:9px;animation-duration:6s;animation-delay:0s;"></i>
+    <i style="left:14%;width:6px;height:6px;animation-duration:5s;animation-delay:-2s;"></i>
+    <i style="left:24%;width:8px;height:8px;animation-duration:6.5s;animation-delay:-1.5s;"></i>
+    <i style="left:34%;width:16px;height:16px;animation-duration:9s;animation-delay:-5s;"></i>
+    <i style="left:44%;width:20px;height:20px;animation-duration:10s;animation-delay:-6s;"></i>
+    <i style="left:54%;width:8px;height:8px;animation-duration:7.5s;animation-delay:-1s;"></i>
+    <i style="left:64%;width:10px;height:10px;animation-duration:5.5s;animation-delay:-2s;"></i>
+    <i style="left:74%;width:7px;height:7px;animation-duration:6s;animation-delay:-0.5s;"></i>
+    <i style="left:84%;width:9px;height:9px;animation-duration:6.5s;animation-delay:-1.5s;"></i>
+    <i style="left:94%;width:12px;height:12px;animation-duration:6.2s;animation-delay:-2.5s;"></i>
+  </div>
+  <div class="stars" aria-hidden="true">
+    <i style="top:8%;left:30%;animation-duration:8s;animation-delay:3.5s;"></i>
+    <i style="top:20%;left:14%;animation-duration:7s;animation-delay:2.5s;"></i>
+    <i style="top:36%;left:8%;animation-duration:9s;animation-delay:6.5s;"></i>
+    <i style="top:52%;left:18%;animation-duration:8.5s;animation-delay:2s;"></i>
+    <i style="top:68%;left:12%;animation-duration:8s;animation-delay:6.8s;"></i>
+    <i style="top:84%;left:4%;animation-duration:8.5s;animation-delay:2.8s;"></i>
+  </div>
+
+  <header class="topnav">
+    <div class="topnav-inner">
+      <a class="brand" href="index.html">王畅达</a>
+      <nav class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="share.html">我的分享</a>
+        <a href="login.html">登录</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <header class="share-head">
+      <h1>管理后台</h1>
+      <p class="share-sub" id="admin-welcome">登录后可管理你的作品与资源</p>
+    </header>
+
+    <div id="admin-unauth" class="state" hidden>
+      <p>你还没有登录，<a href="login.html" style="color:#fff;text-decoration:underline;">点此登录</a></p>
+    </div>
+
+    <div id="admin-body" hidden>
+      <div class="admin-bar">
+        <span class="admin-tag">已登录：<b id="admin-username"></b></span>
+        <button type="button" id="logout-btn" class="admin-logout">退出登录</button>
+      </div>
+
+      <p class="admin-tip">下面是数据库里的全部作品（含隐藏）。可新增、编辑、下架/上架、删除。</p>
+
+      <!-- 新增作品表单 -->
+      <form id="add-form" class="admin-form" autocomplete="off">
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label for="f-category">板块</label>
+            <select id="f-category" class="admin-input">
+              <option value="doodle">涂鸦</option>
+              <option value="essay">随笔</option>
+              <option value="photo">合影</option>
+              <option value="resource">资源</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label for="f-title">标题 *</label>
+            <input id="f-title" class="admin-input" type="text" placeholder="作品标题">
+          </div>
+          <div class="admin-field admin-field-wide">
+            <label for="f-desc">简介 / 正文</label>
+            <textarea id="f-desc" class="admin-input" rows="2" placeholder="一句话说明（随笔可为正文）"></textarea>
+          </div>
+          <div class="admin-field">
+            <label for="f-img">图片（涂鸦/随笔/合影用）</label>
+            <div class="admin-upload-row">
+              <input id="f-img" class="admin-input" type="text" placeholder="上传后自动填入，也可手填文件名">
+              <input id="f-img-file" type="file" accept="image/*" class="admin-file-input" hidden>
+              <button type="button" class="admin-btn admin-btn-upload" data-upload="img">选择图片</button>
+            </div>
+          </div>
+          <div class="admin-field">
+            <label for="f-link">外链（仅资源类）</label>
+            <input id="f-link" class="admin-input" type="text" placeholder="https://…">
+          </div>
+          <div class="admin-field admin-field-wide">
+            <label for="f-file">文档附件（资源类，如 PDF/Word）</label>
+            <div class="admin-upload-row">
+              <input id="f-file" class="admin-input" type="text" placeholder="上传后自动填入文档地址">
+              <input id="f-file-file" type="file" class="admin-file-input" hidden>
+              <button type="button" class="admin-btn admin-btn-upload" data-upload="file">选择文档</button>
+            </div>
+          </div>
+        </div>
+        <p id="add-error" class="admin-error" hidden></p>
+        <button type="submit" id="add-btn" class="admin-submit">新增作品</button>
+      </form>
+
+      <div id="admin-state-loading" class="state">加载中…</div>
+      <div id="admin-state-error" class="state" hidden>加载作品失败，请稍后再试</div>
+      <div id="admin-list" class="list"></div>
+    </div>
+  </main>
+
+  <script>
+    // ===== 管理后台（Day 22 完整版）：登录校验 + 增/改/删/下架 + 图片/文档上传 + 退出登录 =====
+    var API_BASE = "https://changda-vibecoding-d8c0v64bdbf7c-1500185360.ap-shanghai.app.tcloudbase.com";
+
+    // CloudBase 云存储配置（Day 22 上传功能）
+    // 【密钥说明 · Day 23 排查】TCB_ACCESS_KEY 是 CloudBase 的「Publishable Key（发布密钥）」：
+    //   - 官方设计就是写在前端的匿名访问凭证，仅能匿名读写被授权的存储桶，无管理权限；
+    //   - 它不是私密密钥，泄露风险等同「公开」；真正的私密密钥（云函数数据库凭据、
+    //     登录令牌、登录密码）只存在云端函数环境变量和本地 .env，绝不写进代码。
+    //   - 若日后换用有管理权限的密钥，必须移出前端、走服务端代理。
+    var TCB_ENV = "changda-vibecoding-d8c0v64bdbf7c";
+    var TCB_ACCESS_KEY = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImRjNmZkZjJhLTMzZmEtNGE5YS1hOTY2LTA4ZmVmMmI4MzE5NyJ9.eyJpc3MiOiJodHRwczovL2NoYW5nZGEtdmliZWNvZGluZy1kOGMwdjY0YmRiZjdjLmFwLXNoYW5naGFpLnRjYi1hcGkudGVuY2VudGNsb3VkYXBpLmNvbSIsInN1YiI6ImFub24iLCJhdWQiOiJjaGFuZ2RhLXZpYmVjb2RpbmctZDhjMHY2NGJkYmY3YyIsImV4cCI6NDA5NTMxOTYxOCwiaWF0IjoxNzkxNjM2NDE4LCJub25jZSI6InR6Z2VBdUVKU1FTcXF6b1E2alJJSEEiLCJhdF9oYXNoIjoidHpnZUF1RUpTUVNxcXpvUTZqUklIQSIsIm5hbWUiOiJBbm9ueW1vdXMiLCJzY29wZSI6ImFub255bW91cyIsInByb2plY3RfaWQiOiJjaGFuZ2RhLXZpYmVjb2RpbmctZDhjMHY2NGJkYmY3YyIsIm1ldGEiOnsicGxhdGZvcm0iOiJQdWJsaXNoYWJsZUtleSJ9LCJyb2xlIjoiYW5vbiIsImlzX2Fub255bW91cyI6dHJ1ZSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiYW5vbnltb3VzIiwicHJvdmlkZXJzIjpbImFub255bW91cyJdfSwidXNlcl9tZXRhZGF0YSI6eyJuYW1lIjoiQW5vbnltb3VzIn0sInVzZXJfdHlwZSI6IiIsImNsaWVudF90eXBlIjoiY2xpZW50X3VzZXIiLCJpc19zeXN0ZW1fYWRtaW4iOmZhbHNlfQ.aS90u0ESMTBs4n5kXvcZey85HPAvYNmXsJhZ019WCiL4A8cDLda1TT-ads0CV0eNAsytDRmjLxW3b0riFYCEhodybf-hCDgY2M6LcUq4A0MdJzQLVnekF-0J7neodVO7K94N52zq7Z3ZAW9w1_AS2gUQohs-xzmyZkFMi8a5ETdww9YfSqNjyACVcGYF9tmOf0JZ4igb8AtE4APoFypZGDKzzJRJtUfEZjcmDDUeTPapEoZGvWxVVM9BfjjTcJPqnWez3qQP6ECgOFcg2e3gEYzFTae4xDczDKDR1PfvjmdVvjoszB9QVoO2BWs_P6X5y8HW8dD8uWrGBzL_4JJpew";
+
+    var token = localStorage.getItem("admin_token");
+    var username = localStorage.getItem("admin_username");
+
+    var unauthEl = document.getElementById("admin-unauth");
+    var bodyEl = document.getElementById("admin-body");
+    var welcomeEl = document.getElementById("admin-welcome");
+    var usernameEl = document.getElementById("admin-username");
+    var loadingEl = document.getElementById("admin-state-loading");
+    var errorEl = document.getElementById("admin-state-error");
+    var listEl = document.getElementById("admin-list");
+
+    var TYPE_LABEL = { doodle: "涂鸦", essay: "随笔", photo: "合影", resource: "资源" };
+    var TYPE_ORDER = ["doodle", "essay", "photo", "resource"];
+
+    // 内存里存当前作品列表，编辑时直接取，不必重新 fetch
+    var worksCache = [];
+
+    // ===== CloudBase SDK v3 初始化 + 匿名登录（PG 模式云存储，指定桶 works）=====
+    var tcbApp = null;
+    var TCB_BUCKET = "works";   // PG 模式：上传必须指定桶（环境里唯一的桶）
+    var authPromise = null;
+    function initCloudbase() {
+      if (typeof cloudbase === "undefined") {
+        console.warn("CloudBase SDK 未加载，上传功能不可用");
+        return;
+      }
+      try {
+        tcbApp = cloudbase.init({ env: TCB_ENV, accessKey: TCB_ACCESS_KEY });
+        authPromise = ensureSignedIn();
+      } catch (e) {
+        console.warn("CloudBase 初始化失败：", e && e.message);
+      }
+    }
+
+    // 匿名登录（v3 API：app.auth().signInAnonymously()，兼容另一种调用形态）
+    function ensureSignedIn() {
+      try {
+        var auth = tcbApp.auth ? tcbApp.auth({ persistence: "local" }) : (tcbApp.auth && null);
+        if (auth && auth.signInAnonymously) {
+          return auth.signInAnonymously();
+        }
+        if (tcbApp.signInAnonymously) {
+          return tcbApp.signInAnonymously();
+        }
+      } catch (e) {
+        return Promise.reject(e);
+      }
+      return Promise.resolve();
+    }
+    if (typeof cloudbase !== "undefined") {
+      initCloudbase();
+    } else {
+      window.addEventListener("load", initCloudbase);
+    }
+
+    // fileID（cloud://env.bucket/path）转永久公开 URL（https://env.tcb.qcloud.la/path）
+    // 前提：存储桶权限为「公有读」
+    function fileIdToUrl(fileId) {
+      if (!fileId) return "";
+      if (fileId.indexOf("cloud://") === 0) {
+        // cloud://envId.bucket/path → https://envId.tcb.qcloud.la/path
+        var rest = fileId.slice("cloud://".length);
+        var slash = rest.indexOf("/");
+        if (slash > 0) {
+          var envBucket = rest.slice(0, slash);   // envId.bucket
+          var path = rest.slice(slash + 1);       // path
+          var envId = envBucket.split(".")[0];
+          return "https://" + envId + ".tcb.qcloud.la/" + path;
+        }
+      }
+      return fileId;
+    }
+
+    // 上传文件到云存储（PG 模式：storage.from(bucket).upload），返回永久公开 URL
+    // 成功 → { url }；失败 → { url: null, errMsg: 真实报错 }
+    function uploadFile(file, dir) {
+      return new Promise(function (resolve) {
+        if (typeof cloudbase === "undefined" || !tcbApp || !tcbApp.storage) {
+          resolve({ url: null, errMsg: "CloudBase SDK 未加载或版本过旧（v3 才支持 PG 存储桶）" });
+          return;
+        }
+        // 先等匿名登录完成（没登录上传会被 RLS 权限拒绝）
+        (authPromise || ensureSignedIn()).then(function () {
+          var ext = "";
+          var dot = file.name.lastIndexOf(".");
+          if (dot >= 0) ext = file.name.slice(dot);
+          var safeName = file.name.slice(0, dot >= 0 ? dot : file.name.length).replace(/[^\w\u4e00-\u9fa5-]/g, "") || "file";
+          var cloudPath = "uploads/" + dir + "/" + Date.now() + "_" + safeName + ext;
+          var bucket = tcbApp.storage.from(TCB_BUCKET);
+          return bucket.upload(cloudPath, file, { upsert: true }).then(function (r) {
+            if (r && r.error) {
+              var e = r.error;
+              resolve({ url: null, errMsg: e.message || e.errorMsg || e.code || JSON.stringify(e) });
+              return;
+            }
+            // PG 模式：getPublicUrl 是同步的，传桶内对象名
+            var pub = bucket.getPublicUrl(cloudPath);
+            var url = pub && pub.data && pub.data.publicUrl;
+            if (!url) {
+              // 兜底：手动拼公开直链（公有桶固定规律）
+              url = "https://" + TCB_ENV + ".tcb.qcloud.la/" + cloudPath;
+            }
+            resolve({ url: url });
+          });
+        }).catch(function (err) {
+          console.warn("上传失败：", err);
+          resolve({ url: null, errMsg: (err && (err.message || err.errorMsg)) || String(err) });
+        });
+      });
+    }
+
+    // 处理「选择图片/文档」按钮：弹出文件选择，上传后填入对应输入框
+    function handleUploadClick(btn) {
+      var kind = btn.getAttribute("data-upload");   // "img" 或 "file"
+      var id = btn.getAttribute("data-id");          // 编辑表单有 id，新增表单无
+      var inputId, textId, btnText;
+      if (id) {
+        // 编辑表单内
+        inputId = "e-" + kind + "-file-" + id;
+        textId = "e-" + kind + "-" + id;
+      } else {
+        // 新增表单
+        inputId = "f-" + kind + "-file";
+        textId = "f-" + kind;
+      }
+      var fileInput = document.getElementById(inputId);
+      var textInput = document.getElementById(textId);
+      if (!fileInput || !textInput) return;
+      btnText = btn.textContent;
+      fileInput.onchange = function () {
+        var f = fileInput.files && fileInput.files[0];
+        if (!f) return;
+        btn.disabled = true;
+        btn.textContent = "上传中…";
+        uploadFile(f, kind).then(function (r) {
+          btn.disabled = false;
+          btn.textContent = btnText;
+          if (r && r.url) {
+            textInput.value = r.url;
+          } else {
+            // 上传失败：给访客看中文人话，具体技术细节保留在控制台便于排查
+            console.error("上传失败详情：", r && r.errMsg);
+            alert("上传失败，请稍后重试");
+          }
+        });
+        fileInput.value = ""; // 允许重复选同一文件
+      };
+      fileInput.click();
+    }
+
+    // 请求头：读公开接口无需鉴权，但写操作和管理读都带 token
+    function authHeaders(extra) {
+      var h = { "Content-Type": "application/json" };
+      if (token) h["Authorization"] = "Bearer " + token;
+      return Object.assign(h, extra || {});
+    }
+
+    // token 失效：清掉并跳登录页
+    function handleAuthFail() {
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_username");
+      window.location.href = "login.html";
+    }
+
+    // 把裸报错翻译成中文人话（Day 23）：网络层错误转友好提示，业务错误原样保留。
+    function toHumanError(err) {
+      var msg = (err && err.message) || "";
+      if (/failed to fetch|network|load failed|fetch/i.test(msg)) {
+        return "网络连接失败，请检查网络后重试";
+      }
+      return msg || "操作失败，请稍后再试";
+    }
+
+    // 未登录：显示提示，隐藏后台主体
+    if (!token) {
+      unauthEl.hidden = false;
+      welcomeEl.textContent = "请先登录";
+    } else {
+      bodyEl.hidden = false;
+      usernameEl.textContent = username || "changda";
+      loadWorks();
+    }
+
+    // 退出登录：清 token，回登录页
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_username");
+      window.location.href = "login.html";
+    });
+
+    // 读取全部作品（含 hidden）
+    function loadWorks() {
+      loadingEl.hidden = false;
+      errorEl.hidden = true;
+      fetch(API_BASE + "/api/works?all=1", { headers: authHeaders() })
+        .then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          if (!resp.ok) { throw new Error("HTTP " + resp.status); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (!json || json.ok !== true) { throw new Error("接口返回异常"); }
+          worksCache = json.data || [];
+          renderList();
+        })
+        .catch(function (err) {
+          console.error("加载作品失败：", err);
+          loadingEl.hidden = true;
+          errorEl.hidden = false;
+        });
+    }
+
+    // 渲染列表：每项带「编辑 / 下架(上架) / 删除」操作
+    // editingId 非空时，该条展示内联编辑表单
+    function renderList(editingId) {
+      loadingEl.hidden = true;
+      if (!worksCache.length) {
+        listEl.innerHTML = '<div class="state">这里还没有内容，用上方表单新增第一条</div>';
+        return;
+      }
+      var html = "";
+      worksCache.forEach(function (w) {
+        var label = TYPE_LABEL[w.category] || w.category;
+        var statusTag = w.status === "hidden"
+          ? '<span class="tag tag-hidden">已隐藏</span>'
+          : "";
+        var toggleText = w.status === "hidden" ? "上架" : "下架";
+        var toggleAction = w.status === "hidden" ? "public" : "hidden";
+        // 有图片就显示缩略图（文件名直接作为图片地址，图片文件已在静态托管上）
+        // 有图片显示缩略图；没图片渲染同尺寸占位框，保证各条目内容左对齐一致
+        var thumb = w.img
+          ? '<img class="admin-thumb" src="' + esc(w.img) + '" alt="' + esc(w.title) + '">'
+          : '<img class="admin-thumb" src="img-null.png" alt="暂无图片">';
+        html +=
+          '<div class="list-item admin-item">' +
+            thumb +
+            '<div class="list-body">' +
+              '<div class="admin-item-head">' +
+                '<h3 class="list-title">' + esc(w.title) + '</h3>' +
+                '<span class="tag">' + label + '</span>' +
+                '<span class="tag tag-id">id=' + w.id + '</span>' +
+                statusTag +
+              '</div>' +
+              '<p class="list-desc admin-desc">' + esc(w.desc || "") + '</p>' +
+              (w.img ? '<p class="list-desc admin-meta">图片：<span class="admin-file-name" title="' + esc(w.img) + '">' + esc(shortName(w.img)) + '</span></p>' : '') +
+              (w.link ? '<p class="list-desc admin-meta">外链：<span class="admin-file-name" title="' + esc(w.link) + '">' + esc(shortName(w.link)) + '</span></p>' : '') +
+              (w.file ? '<p class="list-desc admin-meta">📄 文档：<a class="admin-file-link" href="' + esc(fileIdToUrl(w.file)) + '" title="' + esc(w.file) + '" target="_blank" rel="noopener">' + esc(shortName(w.file)) + '</a></p>' : '') +
+            '</div>' +
+            '<div class="admin-actions">' +
+              '<button type="button" class="admin-btn admin-btn-edit" data-act="edit" data-id="' + w.id + '">编辑</button>' +
+              '<button type="button" class="admin-btn admin-btn-toggle" data-act="toggle" data-id="' + w.id + '" data-status="' + toggleAction + '">' + toggleText + '</button>' +
+              '<button type="button" class="admin-btn admin-btn-danger" data-act="del" data-id="' + w.id + '">删除</button>' +
+            '</div>';
+
+        // 若该条正在编辑，追加内联编辑表单
+        if (editingId === w.id) {
+          html += renderEditForm(w);
+        }
+
+        html += '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+
+    // 生成内联编辑表单（下拉类别 + 各字段 + 保存/取消）
+    function renderEditForm(w) {
+      var catOptions = TYPE_ORDER.map(function (c) {
+        var sel = c === w.category ? " selected" : "";
+        return '<option value="' + c + '"' + sel + '>' + TYPE_LABEL[c] + '</option>';
+      }).join("");
+      return (
+        '<form class="admin-edit-form" data-edit-id="' + w.id + '">' +
+          '<div class="admin-form-grid">' +
+            '<div class="admin-field">' +
+              '<label for="e-category-' + w.id + '">板块</label>' +
+              '<select id="e-category-' + w.id + '" class="admin-input" data-ef="category">' + catOptions + '</select>' +
+            '</div>' +
+            '<div class="admin-field">' +
+              '<label for="e-title-' + w.id + '">标题 *</label>' +
+              '<input id="e-title-' + w.id + '" class="admin-input" type="text" value="' + esc(w.title || "") + '" data-ef="title">' +
+            '</div>' +
+            '<div class="admin-field admin-field-wide">' +
+              '<label for="e-desc-' + w.id + '">简介 / 正文</label>' +
+              '<textarea id="e-desc-' + w.id + '" class="admin-input" rows="2" data-ef="desc">' + esc(w.desc || "") + '</textarea>' +
+            '</div>' +
+            '<div class="admin-field">' +
+              '<label for="e-img-' + w.id + '">图片（涂鸦/随笔/合影用）</label>' +
+              '<div class="admin-upload-row">' +
+                '<input id="e-img-' + w.id + '" class="admin-input" type="text" value="' + esc(w.img || "") + '" data-ef="img">' +
+                '<input id="e-img-file-' + w.id + '" type="file" accept="image/*" class="admin-file-input" hidden data-upload-input="img" data-id="' + w.id + '">' +
+                '<button type="button" class="admin-btn admin-btn-upload" data-upload="img" data-id="' + w.id + '">选择图片</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="admin-field">' +
+              '<label for="e-link-' + w.id + '">外链（仅资源类）</label>' +
+              '<input id="e-link-' + w.id + '" class="admin-input" type="text" value="' + esc(w.link || "") + '" data-ef="link">' +
+            '</div>' +
+            '<div class="admin-field admin-field-wide">' +
+              '<label for="e-file-' + w.id + '">文档附件（资源类，如 PDF/Word）</label>' +
+              '<div class="admin-upload-row">' +
+                '<input id="e-file-' + w.id + '" class="admin-input" type="text" value="' + esc(w.file || "") + '" data-ef="file">' +
+                '<input id="e-file-file-' + w.id + '" type="file" class="admin-file-input" hidden data-upload-input="file" data-id="' + w.id + '">' +
+                '<button type="button" class="admin-btn admin-btn-upload" data-upload="file" data-id="' + w.id + '">选择文档</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<p class="admin-error" data-ef="error" hidden></p>' +
+          '<div class="admin-edit-actions">' +
+            '<button type="button" class="admin-btn admin-btn-save" data-act="save-edit" data-id="' + w.id + '">保存</button>' +
+            '<button type="button" class="admin-btn" data-act="cancel-edit">取消</button>' +
+          '</div>' +
+        '</form>'
+      );
+    }
+
+    // HTML 转义，防止标题/简介里的特殊字符破坏页面
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
+    // 把长 URL 缩成末尾文件名；超长再省略号截断（列表里只显示短名，鼠标悬停看全名）
+    function shortName(raw, maxLen) {
+      if (!raw) return "";
+      var s = String(raw);
+      // 取最后一个 / 之后的片段作为文件名
+      var slash = s.lastIndexOf("/");
+      var name = slash >= 0 ? s.slice(slash + 1) : s;
+      // 去掉查询串
+      var q = name.indexOf("?");
+      if (q >= 0) name = name.slice(0, q);
+      name = decodeURIComponent(name);
+      maxLen = maxLen || 24;
+      if (name.length > maxLen) {
+        name = name.slice(0, maxLen) + "…";
+      }
+      return name;
+    }
+
+    // 新增作品
+    var addForm = document.getElementById("add-form");
+
+    // 新增表单里的「选择图片/文档」按钮（不在 listEl 内，单独绑定）
+    addForm.addEventListener("click", function (e) {
+      var upBtn = e.target.closest("button[data-upload]");
+      if (upBtn) handleUploadClick(upBtn);
+    });
+
+    var addError = document.getElementById("add-error");
+    var addBtn = document.getElementById("add-btn");
+    addForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var category = document.getElementById("f-category").value;
+      var title = document.getElementById("f-title").value.trim();
+      var desc = document.getElementById("f-desc").value.trim();
+      var img = document.getElementById("f-img").value.trim();
+      var link = document.getElementById("f-link").value.trim();
+      var file = document.getElementById("f-file").value.trim();
+
+      if (!title) { showAddError("请填写标题"); return; }
+
+      addBtn.disabled = true;
+      addBtn.textContent = "提交中…";
+      addError.hidden = true;
+
+      fetch(API_BASE + "/api/works", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ category: category, title: title, desc: desc, img: img, link: link, file: file })
+      })
+        .then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (json && json.ok === true) {
+            // 成功后清空表单并刷新列表
+            addForm.reset();
+            loadWorks();
+          } else {
+            throw new Error((json && json.error) || "新增失败");
+          }
+        })
+        .catch(function (err) {
+          showAddError(toHumanError(err) || "新增失败，请稍后再试");
+        })
+        .finally(function () {
+          addBtn.disabled = false;
+          addBtn.textContent = "新增作品";
+        });
+    });
+
+    function showAddError(msg) {
+      addError.textContent = msg;
+      addError.hidden = false;
+    }
+
+    // 编辑 / 下架 / 删除 / 取消编辑 / 保存编辑 / 上传（事件委托，按钮动态生成）
+    listEl.addEventListener("click", function (e) {
+      // 上传按钮单独处理（data-upload 属性）
+      var upBtn = e.target.closest("button[data-upload]");
+      if (upBtn) { handleUploadClick(upBtn); return; }
+
+      var btn = e.target.closest("button[data-act]");
+      if (!btn) return;
+      var act = btn.getAttribute("data-act");
+      var id = parseInt(btn.getAttribute("data-id"), 10);
+
+      if (act === "edit") {
+        openEdit(id);
+      } else if (act === "toggle") {
+        var status = btn.getAttribute("data-status");
+        toggleWork(id, status);
+      } else if (act === "del") {
+        deleteWork(id);
+      } else if (act === "cancel-edit") {
+        renderList(); // 收起编辑表单
+      } else if (act === "save-edit") {
+        saveEdit(btn, id);
+      }
+    });
+
+    // 保存编辑：读取内联表单字段，发 PATCH
+    function saveEdit(btn, id) {
+      var form = btn.closest("form[data-edit-id]");
+      if (!form) return;
+
+      var category = form.querySelector('[data-ef="category"]').value;
+      var title = form.querySelector('[data-ef="title"]').value.trim();
+      var desc = form.querySelector('[data-ef="desc"]').value.trim();
+      var img = form.querySelector('[data-ef="img"]').value.trim();
+      var link = form.querySelector('[data-ef="link"]').value.trim();
+      var file = form.querySelector('[data-ef="file"]').value.trim();
+      var errEl = form.querySelector('[data-ef="error"]');
+
+      if (!title) {
+        errEl.textContent = "请填写标题";
+        errEl.hidden = false;
+        return;
+      }
+
+      // 资源类：清空 img；非资源类：清空 link（保持字段语义一致）
+      var finalImg = category === "resource" ? "" : img;
+      var finalLink = category === "resource" ? link : "";
+
+      btn.disabled = true;
+      btn.textContent = "保存中…";
+      errEl.hidden = true;
+
+      fetch(API_BASE + "/api/works", {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: id,
+          category: category,
+          title: title,
+          desc: desc,
+          img: finalImg,
+          link: finalLink,
+          file: file
+        })
+      })
+        .then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (json && json.ok === true) {
+            loadWorks();
+          } else {
+            throw new Error((json && json.error) || "修改失败");
+          }
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = "保存";
+          errEl.textContent = toHumanError(err) || "修改失败，请稍后再试";
+          errEl.hidden = false;
+        });
+    }
+
+    // 编辑：展开该条的内联表单
+    function openEdit(id) {
+      renderList(id);
+    }
+
+    // 下架 / 上架（切换 status）
+    function toggleWork(id, status) {
+      var verb = status === "hidden" ? "下架" : "上架";
+      if (!confirm("确定要" + verb + "这条作品吗？")) return;
+
+      fetch(API_BASE + "/api/works", {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ id: id, status: status })
+      })
+        .then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (json && json.ok === true) {
+            loadWorks();
+          } else {
+            alert((json && json.error) || "操作失败");
+          }
+        })
+        .catch(function (err) {
+          alert(toHumanError(err) || "操作失败，请稍后再试");
+        });
+    }
+
+    // 删除（物理删除，不可恢复）
+    function deleteWork(id) {
+      if (!confirm("删除后不可恢复，确定要删除这条作品吗？")) return;
+
+      fetch(API_BASE + "/api/works?id=" + id, {
+        method: "DELETE",
+        headers: authHeaders()
+      })
+        .then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (json && json.ok === true) {
+            loadWorks();
+          } else {
+            alert((json && json.error) || "删除失败");
+          }
+        })
+        .catch(function (err) {
+          alert(toHumanError(err) || "删除失败，请稍后再试");
+        });
+    }
+  </script>
+</body>
+</html>

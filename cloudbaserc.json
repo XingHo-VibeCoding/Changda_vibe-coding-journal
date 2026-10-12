@@ -1,16 +1,31 @@
 {
   "envId": "changda-vibecoding-d8c0v64bdbf7c",
+  "_warning": "注意：CLOUDBASE_API_KEY 和 LOGIN_TOKEN 是密钥，绝不能写进本文件（会进 git）。它们只能在控制台手动配置，且 CLI 的 fn deploy --force 会用它覆盖线上环境变量、导致密钥丢失——部署云函数后务必回控制台核对环境变量。",
   "functions": [
     {
       "name": "works",
       "timeout": 10,
       "memorySize": 256,
-      "description": "GET /api/works 分享列表读接口（Day 17）",
+      "description": "GET /api/works 分享列表读接口（Day 17）+ PATCH/DELETE（Day 22）",
       "envVariables": {
         "CLOUDBASE_ENV_ID": "changda-vibecoding-d8c0v64bdbf7c"
       }
+    },
+    {
+      "name": "login",
+      "timeout": 10,
+      "memorySize": 128,
+      "description": "POST /api/login 登录验证接口（Day 21 轻量版）"
     }
   ],
+  "gateway": {
+    "routes": [
+      {
+        "path": "/api/login",
+        "target": "function:login"
+      }
+    ]
+  },
   "framework": {
     "name": "changda-homepage",
     "plugins": {
