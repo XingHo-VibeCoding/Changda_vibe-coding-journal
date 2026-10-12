@@ -174,10 +174,8 @@
       var html = "";
       items.forEach(function (i) {
         var tag = TYPE_LABEL[i.type];
-        // 资源类直接外链；涂鸦/随笔/合影带图的进详情页
-        var href = (i.type === "res")
-          ? (i.link || "#")
-          : "work.html?title=" + encodeURIComponent(i.title) + "&cat=" + i.type;
+        // 所有类型统一进详情页（work.html）；资源类也在详情页内展示文档/外链
+        var href = "work.html?title=" + encodeURIComponent(i.title) + "&cat=" + i.type;
         var thumb = i.img
           ? '<img class="list-thumb" src="' + i.img + '" alt="' + i.title + '">'
           : "";

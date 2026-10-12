@@ -135,6 +135,30 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 0;
 }
 
+/* 作品详情页操作按钮区（资源类：下载文档 / 打开外链） */
+.work-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.work-btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .15s, box-shadow .15s;
+}
+.work-btn:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(47, 155, 214, .18);
+  text-decoration: none;
+}
+
 /* 作品详情页「上一个/下一个」左右浮动箭头按钮 */
 .work-pager {
   position: fixed;

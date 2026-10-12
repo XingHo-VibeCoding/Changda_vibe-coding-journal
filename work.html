@@ -87,6 +87,7 @@
         <h2>作品简介</h2>
         <p id="work-intro"></p>
       </section>
+      <div id="work-actions" class="work-actions" hidden></div>
     </article>
 
     <nav class="work-pager" id="work-pager">
@@ -165,6 +166,23 @@
           }
           document.getElementById("work-intro").textContent = current.desc || "";
           document.getElementById("work-detail").hidden = false;
+
+          // —— 资源类：渲染「下载文档」「打开外链」按钮 ——
+          var actionsEl = document.getElementById("work-actions");
+          actionsEl.innerHTML = "";
+          var actions = [];
+          if (type === "res" && current.file) {
+            actions.push('<a class="work-btn" href="' + current.file + '" target="_blank" rel="noopener">下载文档</a>');
+          }
+          if (type === "res" && current.link) {
+            actions.push('<a class="work-btn" href="' + current.link + '" target="_blank" rel="noopener">打开链接</a>');
+          }
+          if (actions.length > 0) {
+            actionsEl.innerHTML = actions.join("");
+            actionsEl.hidden = false;
+          } else {
+            actionsEl.hidden = true;
+          }
 
           // —— 同类型内「上一个/下一个」：基于数据库真实列表，按标题排序 ——
           var sameType = data.filter(function (d) {
