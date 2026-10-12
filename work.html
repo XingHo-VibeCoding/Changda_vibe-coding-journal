@@ -96,75 +96,114 @@
   </main>
 
   <script>
-    // 每个作品的类型（板块），用于「上一个/下一个」只在同类型内浏览
-    var works = {
-      "手": { type: "doodle", img: "img-hand.jpg", intro: "速写课第一节，画自己的手，感觉还不错，看来美术功底还在" },
-      "涂鸦": { type: "doodle", img: "img-doodle-math.jpg", intro: "emmm，我想想……" },
-      "冲鸭": { type: "doodle", img: "img-chongya.jpg", intro: "冲鸭！继续加油" },
-      "线条狗": { type: "doodle", img: "img-dog-line.jpg", intro: "被阳光晾晒的小狗，云朵也化作小狗的模样，把可爱晒得蓬松柔软。" },
-      "下一个灵气复苏时代": { type: "essay", img: "", intro: "非洲大地可以等下一个雨季，但人的一生那么短，还能等到下一个灵气复苏的时代吗？" }
-    };
-    // 按类型分组的有序标题列表（顺序即浏览顺序），用于同类型翻页
-    var TYPE_ORDER = {
-      doodle: ["手", "涂鸦", "冲鸭", "线条狗"],
-      essay: ["下一个灵气复苏时代"]
-    };
-    var params = new URLSearchParams(window.location.search);
-    var t = params.get("title");
+    // ===== 作品详情页：从数据库真实数据读取（Day 24 修复）=====
+    // 原实现用写死的 works 对象，与 share.html 的数据库数据脱节，
+    // 导致新增/改标题/资源类作品点进来永远显示 not-found。
+    // 现在改为 fetch /api/works 真实数据，按 URL 的 title+cat 匹配。
+    var API_BASE = "https://changda-vibecoding-d8c0v64bdbf7c-1500185360.ap-shanghai.app.tcloudbase.com";
+
     // 板块类型（涂鸦/随笔/合影/资源），用于「返回」时回到分享页对应栏目
     var CAT_LABEL = { doodle: "涂鸦", essay: "随笔", photo: "合影", res: "资源" };
+    // 后端 category → 前端 type（resource 在前端叫 res）
+    function toType(category) { return category === "resource" ? "res" : category; }
+
+    var params = new URLSearchParams(window.location.search);
+    var t = params.get("title");
     var cat = params.get("cat");
+
+    // 返回链接：有板块类型则回到对应栏目
     if (CAT_LABEL[cat]) {
       var back = document.getElementById("back-link");
       back.href = "share.html?cat=" + cat;
       back.textContent = "← 返回分享·" + CAT_LABEL[cat];
     }
-    if (t && works[t]) {
-      var w = works[t];
-      document.getElementById("work-title").textContent = t;
-      var imgEl = document.getElementById("work-img");
-      if (w.img) {
-        imgEl.style.display = "";   // 有图：正常显示
-        imgEl.src = w.img;
-        imgEl.alt = t;
-      } else {
-        imgEl.style.display = "none"; // 无图随笔：隐藏图片位
-      }
-      document.getElementById("work-intro").textContent = w.intro;
-      document.getElementById("work-detail").hidden = false;
 
-      // —— 同类型内「上一个/下一个」浏览 ——
-      var type = w.type;
-      var list = TYPE_ORDER[type] || [];
-      var idx = list.indexOf(t);
-      var prevLink = document.getElementById("prev-link");
-      var nextLink = document.getElementById("next-link");
-      var pager = document.getElementById("work-pager");
-      // 列表为空或只有当前一项：整个翻页栏隐藏
-      if (list.length <= 1) {
-        pager.style.display = "none";
-      } else {
-        pager.style.display = "";
-        var base = "work.html?cat=" + type;
-        // 上一个：idx 是 0（第一项）时禁用
-        if (idx > 0) {
-          prevLink.href = base + "&title=" + encodeURIComponent(list[idx - 1]);
-          prevLink.classList.remove("is-disabled");
-        } else {
-          prevLink.removeAttribute("href");
-          prevLink.classList.add("is-disabled");
-        }
-        // 下一个：idx 是最后一项时禁用
-        if (idx >= 0 && idx < list.length - 1) {
-          nextLink.href = base + "&title=" + encodeURIComponent(list[idx + 1]);
-          nextLink.classList.remove("is-disabled");
-        } else {
-          nextLink.removeAttribute("href");
-          nextLink.classList.add("is-disabled");
-        }
-      }
-    } else {
+    // 没有 title 参数：直接显示「请从首页进入」
+    if (!t) {
       document.getElementById("not-found").hidden = false;
+    } else {
+      // 拉取真实作品列表，匹配当前标题
+      fetch(API_BASE + "/api/works")
+        .then(function (resp) {
+          if (!resp.ok) { throw new Error("HTTP " + resp.status); }
+          return resp.json();
+        })
+        .then(function (json) {
+          if (!json || json.ok !== true) { throw new Error("接口返回异常"); }
+          var data = json.data || [];
+
+          // 按标题匹配当前作品（cat 也用于辅助定位，避免同名不同类）
+          var current = null;
+          for (var i = 0; i < data.length; i++) {
+            if (data[i].title === t &&
+                (!cat || toType(data[i].category) === cat)) {
+              current = data[i];
+              break;
+            }
+          }
+          // 退一步：只要标题能对上就认（老链接可能没带 cat）
+          if (!current) {
+            for (var j = 0; j < data.length; j++) {
+              if (data[j].title === t) { current = data[j]; break; }
+            }
+          }
+
+          if (!current) {
+            document.getElementById("not-found").hidden = false;
+            return;
+          }
+
+          var type = toType(current.category);
+          document.getElementById("work-title").textContent = current.title;
+          var imgEl = document.getElementById("work-img");
+          if (current.img) {
+            imgEl.style.display = "";
+            imgEl.src = current.img;
+            imgEl.alt = current.title;
+          } else {
+            imgEl.style.display = "none";
+          }
+          document.getElementById("work-intro").textContent = current.desc || "";
+          document.getElementById("work-detail").hidden = false;
+
+          // —— 同类型内「上一个/下一个」：基于数据库真实列表，按标题排序 ——
+          var sameType = data.filter(function (d) {
+            return toType(d.category) === type;
+          }).sort(function (a, b) {
+            return (a.title || "").localeCompare(b.title || "", "zh");
+          });
+          var idx = sameType.findIndex(function (d) { return d.title === current.title; });
+
+          var prevLink = document.getElementById("prev-link");
+          var nextLink = document.getElementById("next-link");
+          var pager = document.getElementById("work-pager");
+          if (sameType.length <= 1) {
+            pager.style.display = "none";
+          } else {
+            pager.style.display = "";
+            var base = "work.html?cat=" + type;
+            if (idx > 0) {
+              prevLink.href = base + "&title=" + encodeURIComponent(sameType[idx - 1].title);
+              prevLink.classList.remove("is-disabled");
+            } else {
+              prevLink.removeAttribute("href");
+              prevLink.classList.add("is-disabled");
+            }
+            if (idx >= 0 && idx < sameType.length - 1) {
+              nextLink.href = base + "&title=" + encodeURIComponent(sameType[idx + 1].title);
+              nextLink.classList.remove("is-disabled");
+            } else {
+              nextLink.removeAttribute("href");
+              nextLink.classList.add("is-disabled");
+            }
+          }
+        })
+        .catch(function (err) {
+          // 加载失败：显示提示，而不是误判成「作品不存在」
+          console.error("详情加载失败：", err);
+          document.getElementById("not-found").textContent = "网络连接失败，请检查网络后重试";
+          document.getElementById("not-found").hidden = false;
+        });
     }
   </script>
 </body>
