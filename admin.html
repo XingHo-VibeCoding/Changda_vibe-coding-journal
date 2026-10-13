@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理后台 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=64">
+  <link rel="stylesheet" href="style.css?v=65">
   <!-- CloudBase Web SDK：用于图片/文档直传云存储（Day 22 上传功能） -->
   <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 </head>
@@ -542,7 +542,7 @@
         var status = btn.getAttribute("data-status");
         toggleWork(id, status);
       } else if (act === "del") {
-        deleteWork(id);
+        deleteWork(id, btn);
       } else if (act === "cancel-edit") {
         renderList(); // 收起编辑表单
       } else if (act === "save-edit") {
@@ -623,10 +623,8 @@
     }
 
     // 下架 / 上架（切换 status）
+    // 说明：上架/下架是可逆操作，不再弹浏览器原生 confirm（手机浏览器会渲染成"确定/关闭网页"的系统弹窗，误触很突兀），直接执行
     function toggleWork(id, status) {
-      var verb = status === "hidden" ? "下架" : "上架";
-      if (!confirm("确定要" + verb + "这条作品吗？")) return;
-
       fetch(API_BASE + "/api/works", {
         method: "PATCH",
         headers: authHeaders(),
@@ -649,9 +647,24 @@
     }
 
     // 删除（物理删除，不可恢复）
-    function deleteWork(id) {
-      if (!confirm("删除后不可恢复，确定要删除这条作品吗？")) return;
-
+    // 说明：不弹浏览器原生 confirm，改用按钮二次点击确认：第一次点变成"再点一次确认"，3 秒内再点才真正删除，超时自动还原
+    var DEL_CONFIRM_MS = 3000;
+    function deleteWork(id, btn) {
+      // 二次确认：第一次点击
+      if (!btn || btn.getAttribute("data-armed") !== "1") {
+        // 先解除其他已处于确认态的删除按钮
+        var armed = listEl.querySelector('button[data-act="del"][data-armed="1"]');
+        if (armed) resetDelBtn(armed);
+        if (!btn) return;
+        btn.setAttribute("data-armed", "1");
+        btn.setAttribute("data-label", btn.textContent);
+        btn.textContent = "确认删除？";
+        btn.classList.add("is-armed");
+        btn.setAttribute("data-timer", String(setTimeout(function () { resetDelBtn(btn); }, DEL_CONFIRM_MS)));
+        return;
+      }
+      // 第二次点击：真正删除
+      clearTimeout(parseInt(btn.getAttribute("data-timer"), 10));
       fetch(API_BASE + "/api/works?id=" + id, {
         method: "DELETE",
         headers: authHeaders()
@@ -670,6 +683,15 @@
         .catch(function (err) {
           alert(toHumanError(err) || "删除失败，请稍后再试");
         });
+    }
+
+    // 把删除按钮从"确认态"还原回正常态
+    function resetDelBtn(btn) {
+      btn.removeAttribute("data-armed");
+      btn.classList.remove("is-armed");
+      var label = btn.getAttribute("data-label");
+      if (label) btn.textContent = label;
+      btn.removeAttribute("data-label");
     }
   </script>
 </body>

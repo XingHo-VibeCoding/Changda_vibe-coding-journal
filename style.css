@@ -1330,3 +1330,10 @@ textarea.admin-input { resize: vertical; }
   background: #f8e4e4;
   border-color: #e0a8a8;
 }
+/* 删除按钮的二次确认态：红底白字，提示再点一次 */
+.admin-btn-danger.is-armed {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+  font-weight: 600;
+}
