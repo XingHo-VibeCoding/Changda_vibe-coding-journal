@@ -242,6 +242,15 @@ const server = http.createServer(async function (req, res) {
     const link = body.link !== undefined ? (body.link || "").trim() : undefined;
     const file = body.file !== undefined ? (body.file || "").trim() : undefined;
     const status = body.status !== undefined ? (body.status || "").trim() : undefined;
+    // 新 id（改 id 排序用）：传了且不等于原 id 才算「改 id」
+    let newId = undefined;
+    if (body.newId !== undefined && body.newId !== null && body.newId !== "") {
+      newId = parseInt(body.newId, 10);
+      if (!newId || newId <= 0) {
+        return sendJson(res, 400, { ok: false, error: "排序号（id）必须是正整数" });
+      }
+      if (newId === id) newId = undefined;   // 没变化就不动
+    }
 
     // 校验：若提供了 category，必须在白名单内
     if (category !== undefined && CATEGORIES.indexOf(category) === -1) {
@@ -264,6 +273,15 @@ const server = http.createServer(async function (req, res) {
     if (link !== undefined) fields.link = link || null;
     if (file !== undefined) fields.file = file || null;
     if (status !== undefined) fields.status = status;
+    if (newId !== undefined) fields.id = newId;   // 改主键 id（排序用）
+
+    // 改 id 前查重：新 id 不能被其他作品占用
+    if (newId !== undefined) {
+      const occupied = await db.idExists(newId, id);
+      if (occupied) {
+        return sendJson(res, 409, { ok: false, error: "排序号（id）已被其他作品占用，请换一个" });
+      }
+    }
 
     // 没有可更新的字段
     if (Object.keys(fields).length === 0) {

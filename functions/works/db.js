@@ -65,7 +65,8 @@ async function listWorks(options) {
   const category = options.category;
   const limit = options.limit;
 
-  let qs = "select=*&status=eq.public";
+  // 显式按 id 升序排序，保证「上传顺序 / 手动调整的 id」决定展示顺序
+  let qs = "select=*&status=eq.public&order=id.asc";
   if (category) qs += "&category=eq." + encodeURIComponent(category);
   if (limit > 0) qs += "&limit=" + limit;
 
@@ -158,7 +159,7 @@ async function insertWork(fields) {
 // —— 读全部作品（管理后台用）：含 hidden，不按 status 过滤 ——
 // 返回：Promise<Array>，每项已是接口字段（含 desc、status）
 async function listAllWorks() {
-  const qs = "select=*";
+  const qs = "select=*&order=id.asc";
 
   const r = await fetch(GW + "?" + qs, {
     method: "GET",
@@ -178,9 +179,28 @@ async function listAllWorks() {
   return rows.map(toApiRow);
 }
 
+// —— 查询某个 id 是否已被占用（改 id 前查重用）——
+// 返回：Promise<boolean>，true 表示该 id 已存在（且不等于 excludeId）
+async function idExists(id, excludeId) {
+  let qs = "select=id&id=eq." + id;
+  const r = await fetch(GW + "?" + qs, {
+    method: "GET",
+    headers: authHeaders()
+  });
+  if (!r.ok) {
+    // 查询失败不阻断，返回 false 让后续写入时数据库兜底报主键冲突
+    return false;
+  }
+  const rows = await r.json();
+  if (!rows || rows.length === 0) return false;
+  if (excludeId != null && rows.length === 1 && Number(rows[0].id) === Number(excludeId)) return false;
+  return true;
+}
+
 // —— 修改一条作品（PATCH 用）——
-// id：作品主键；fields：{ category, title, description, img, link, file, status }
-// 返回：Promise<Object>，包含修改后作品的 id、category、title
+// id：作品主键；fields：{ category, title, description, img, link, file, status, id(newId) }
+// 支持改 id（方案 B：通过改 id 排序）。改 id 后需重置自增序列，避免下次新增撞车。
+// 返回：Promise<Object>，包含修改后作品的新 id、category、title
 async function updateWork(id, fields) {
   // 只允许更新白名单字段，避免误改 user_id / created_at
   const patch = {};
@@ -191,6 +211,7 @@ async function updateWork(id, fields) {
   if (fields.link !== undefined) patch.link = fields.link || null;
   if (fields.file !== undefined) patch.file = fields.file || null;
   if (fields.status !== undefined) patch.status = fields.status;
+  if (fields.id !== undefined) patch.id = fields.id;   // 改主键 id（排序用）
 
   const r = await fetch(GW + "?id=eq." + id, {
     method: "PATCH",
@@ -212,13 +233,39 @@ async function updateWork(id, fields) {
 
   const updated = await r.json();
   const row = updated && (updated[0] || updated);
-  log("修改作品成功", JSON.stringify({ id: id, category: fields.category, title: fields.title }));
+  const newId = (fields.id !== undefined) ? fields.id : id;
+
+  // 改 id 后，重置自增序列到当前最大 id，避免下次新增撞主键
+  if (fields.id !== undefined) {
+    try {
+      await resetIdentity();
+    } catch (e) {
+      // 重置失败不致命（只是下次新增可能撞 id），记日志
+      log("重置自增序列失败（可忽略）", e.message);
+    }
+  }
+
+  log("修改作品成功", JSON.stringify({ id: id, newId: newId, category: fields.category, title: fields.title }));
 
   return {
-    id: id,
+    id: newId,
     category: row.category,
     title: row.title
   };
+}
+
+// —— 重置 works 表自增序列到当前最大 id ——
+// 通过 REST 网关执行 SQL 函数（PostgREST 支持 RPC 调用）
+async function resetIdentity() {
+  const r = await fetch(GW.replace(/\/works$/, "/rpc/reset_works_identity"), {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: "{}"
+  });
+  if (!r.ok) {
+    const body = await r.text();
+    throw new Error("reset identity failed: " + r.status + " " + body);
+  }
 }
 
 // —— 物理删除一条作品（DELETE 用，不可恢复）——
@@ -251,5 +298,7 @@ module.exports = {
   findDuplicate: findDuplicate,
   insertWork: insertWork,
   updateWork: updateWork,
-  deleteWork: deleteWork
+  deleteWork: deleteWork,
+  idExists: idExists,
+  resetIdentity: resetIdentity
 };

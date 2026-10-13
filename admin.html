@@ -404,6 +404,10 @@
               '<label for="e-title-' + w.id + '">标题 *</label>' +
               '<input id="e-title-' + w.id + '" class="admin-input" type="text" value="' + esc(w.title || "") + '" data-ef="title">' +
             '</div>' +
+            '<div class="admin-field">' +
+              '<label for="e-id-' + w.id + '">排序号（id，越小越靠前）</label>' +
+              '<input id="e-id-' + w.id + '" class="admin-input" type="number" min="1" value="' + w.id + '" data-ef="newId">' +
+            '</div>' +
             '<div class="admin-field admin-field-wide">' +
               '<label for="e-desc-' + w.id + '">简介 / 正文</label>' +
               '<textarea id="e-desc-' + w.id + '" class="admin-input" rows="2" data-ef="desc">' + esc(w.desc || "") + '</textarea>' +
@@ -557,10 +561,17 @@
       var img = form.querySelector('[data-ef="img"]').value.trim();
       var link = form.querySelector('[data-ef="link"]').value.trim();
       var file = form.querySelector('[data-ef="file"]').value.trim();
+      var newIdInput = form.querySelector('[data-ef="newId"]');
+      var newId = newIdInput ? parseInt(newIdInput.value, 10) : id;
       var errEl = form.querySelector('[data-ef="error"]');
 
       if (!title) {
         errEl.textContent = "请填写标题";
+        errEl.hidden = false;
+        return;
+      }
+      if (!newId || newId <= 0) {
+        errEl.textContent = "排序号（id）必须是正整数";
         errEl.hidden = false;
         return;
       }
@@ -578,6 +589,7 @@
         headers: authHeaders(),
         body: JSON.stringify({
           id: id,
+          newId: newId,
           category: category,
           title: title,
           desc: desc,
