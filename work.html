@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>作品 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=64">
+  <link rel="stylesheet" href="style.css?v=71">
 </head>
-<body>
+<body class="share-page">
   <div class="bubbles" aria-hidden="true">
     <i style="left:4%;width:9px;height:9px;animation-duration:6s;animation-delay:0s;"></i>
     <i style="left:9%;width:14px;height:14px;animation-duration:7.5s;animation-delay:-1s;"></i>
@@ -108,6 +108,30 @@
     // 后端 category → 前端 type（resource 在前端叫 res）
     function toType(category) { return category === "resource" ? "res" : category; }
 
+    // HTML 转义，防止正文里的特殊字符破坏页面（XSS 防护）
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
+    // 把纯文本正文按换行拆成 <p> 段落，保留空行分段
+    function paragraphsToHtml(text) {
+      var s = String(text || "");
+      var lines = s.split(/\r?\n/);
+      var html = "";
+      lines.forEach(function (line) {
+        var trimmed = line.trim();
+        if (trimmed === "") {
+          // 空行：用空段落占位，形成段落间距
+          html += "<p class=\"work-para work-para-empty\"></p>";
+        } else {
+          html += "<p class=\"work-para\">" + esc(trimmed) + "</p>";
+        }
+      });
+      return html;
+    }
+
     var params = new URLSearchParams(window.location.search);
     var t = params.get("title");
     var cat = params.get("cat");
@@ -155,6 +179,8 @@
           }
 
           var type = toType(current.category);
+          // 随笔/资源是长文，详情页放宽行宽；涂鸦/合影保持窄版
+          document.body.classList.toggle("share-wide", type === "essay" || type === "res");
           document.getElementById("work-title").textContent = current.title;
           var imgEl = document.getElementById("work-img");
           if (current.img) {
@@ -164,7 +190,7 @@
           } else {
             imgEl.style.display = "none";
           }
-          document.getElementById("work-intro").textContent = current.desc || "";
+          document.getElementById("work-intro").innerHTML = paragraphsToHtml(current.desc);
           document.getElementById("work-detail").hidden = false;
 
           // —— 资源类：渲染「下载文档」「打开外链」按钮 ——

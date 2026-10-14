@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理后台 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=65">
+  <link rel="stylesheet" href="style.css?v=71">
   <!-- CloudBase Web SDK：用于图片/文档直传云存储（Day 22 上传功能） -->
   <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 </head>
@@ -104,6 +104,8 @@
         <button type="submit" id="add-btn" class="admin-submit">新增作品</button>
       </form>
 
+      <div id="admin-tabs" class="admin-tabs" hidden></div>
+
       <div id="admin-state-loading" class="state">加载中…</div>
       <div id="admin-state-error" class="state" hidden>加载作品失败，请稍后再试</div>
       <div id="admin-list" class="list"></div>
@@ -139,6 +141,8 @@
 
     // 内存里存当前作品列表，编辑时直接取，不必重新 fetch
     var worksCache = [];
+    // 当前选中的板块标签（null 表示"全部"），标签页切换用
+    var currentTab = null;
 
     // ===== CloudBase SDK v3 初始化 + 匿名登录（PG 模式云存储，指定桶 works）=====
     var tcbApp = null;
@@ -335,27 +339,65 @@
         });
     }
 
-    // 渲染列表：每项带「编辑 / 下架(上架) / 删除」操作
+    // 渲染列表：顶部标签页按板块切换，当前板块内作品按 id 升序，每项带「编辑/上移/下移/下架/删除」操作
     // editingId 非空时，该条展示内联编辑表单
+    function renderTabs() {
+      var tabsEl = document.getElementById("admin-tabs");
+      // 统计每类数量
+      var counts = {};
+      TYPE_ORDER.forEach(function (c) { counts[c] = 0; });
+      worksCache.forEach(function (w) { if (counts[w.category] !== undefined) counts[w.category]++; });
+      var total = worksCache.length;
+      // 生成标签按钮：全部 + 四类
+      var html = '<button type="button" class="admin-tab' + (currentTab === null ? " is-active" : "") + '" data-tab="">全部 (' + total + ')</button>';
+      TYPE_ORDER.forEach(function (c) {
+        html += '<button type="button" class="admin-tab' + (currentTab === c ? " is-active" : "") + '" data-tab="' + c + '">' + TYPE_LABEL[c] + ' (' + counts[c] + ')</button>';
+      });
+      tabsEl.innerHTML = html;
+      tabsEl.hidden = false;
+    }
+
     function renderList(editingId) {
       loadingEl.hidden = true;
+      renderTabs();
+
       if (!worksCache.length) {
         listEl.innerHTML = '<div class="state">这里还没有内容，用上方表单新增第一条</div>';
         return;
       }
+
+      // 过滤出当前标签下的作品，并按 id 升序排序（同板块内）
+      var items = worksCache.filter(function (w) {
+        return currentTab === null || w.category === currentTab;
+      }).sort(function (a, b) { return a.id - b.id; });
+
+      // 当前标签下无作品：显示空态
+      if (!items.length) {
+        var emptyLabel = currentTab ? TYPE_LABEL[currentTab] : "作品";
+        listEl.innerHTML = '<div class="admin-empty">「' + emptyLabel + '」还没有作品，用上方表单新增第一条</div>';
+        return;
+      }
+
       var html = "";
-      worksCache.forEach(function (w) {
+      items.forEach(function (w, idx) {
         var label = TYPE_LABEL[w.category] || w.category;
         var statusTag = w.status === "hidden"
           ? '<span class="tag tag-hidden">已隐藏</span>'
           : "";
         var toggleText = w.status === "hidden" ? "上架" : "下架";
         var toggleAction = w.status === "hidden" ? "public" : "hidden";
-        // 有图片就显示缩略图（文件名直接作为图片地址，图片文件已在静态托管上）
-        // 有图片显示缩略图；没图片渲染同尺寸占位框，保证各条目内容左对齐一致
         var thumb = w.img
           ? '<img class="admin-thumb" src="' + esc(w.img) + '" alt="' + esc(w.title) + '">'
           : '<img class="admin-thumb" src="img-null.png" alt="暂无图片">';
+
+        // 上移/下移：在同板块内交换相邻作品的 id。第一项禁用上移，最后一项禁用下移
+        var moveUp = idx > 0
+          ? '<button type="button" class="admin-btn admin-btn-move" data-act="move" data-dir="up" data-id="' + w.id + '" title="上移">↑</button>'
+          : '<button type="button" class="admin-btn admin-btn-move" disabled title="已是第一项">↑</button>';
+        var moveDown = idx < items.length - 1
+          ? '<button type="button" class="admin-btn admin-btn-move" data-act="move" data-dir="down" data-id="' + w.id + '" title="下移">↓</button>'
+          : '<button type="button" class="admin-btn admin-btn-move" disabled title="已是最后一项">↓</button>';
+
         html +=
           '<div class="list-item admin-item">' +
             thumb +
@@ -373,11 +415,12 @@
             '</div>' +
             '<div class="admin-actions">' +
               '<button type="button" class="admin-btn admin-btn-edit" data-act="edit" data-id="' + w.id + '">编辑</button>' +
+              moveUp +
+              moveDown +
               '<button type="button" class="admin-btn admin-btn-toggle" data-act="toggle" data-id="' + w.id + '" data-status="' + toggleAction + '">' + toggleText + '</button>' +
               '<button type="button" class="admin-btn admin-btn-danger" data-act="del" data-id="' + w.id + '">删除</button>' +
             '</div>';
 
-        // 若该条正在编辑，追加内联编辑表单
         if (editingId === w.id) {
           html += renderEditForm(w);
         }
@@ -538,6 +581,9 @@
 
       if (act === "edit") {
         openEdit(id);
+      } else if (act === "move") {
+        var dir = btn.getAttribute("data-dir");
+        moveWork(id, dir);
       } else if (act === "toggle") {
         var status = btn.getAttribute("data-status");
         toggleWork(id, status);
@@ -549,6 +595,61 @@
         saveEdit(btn, id);
       }
     });
+
+    // 标签页点击切换板块
+    document.getElementById("admin-tabs").addEventListener("click", function (e) {
+      var tab = e.target.closest("button[data-tab]");
+      if (!tab) return;
+      var val = tab.getAttribute("data-tab");
+      currentTab = val === "" ? null : val;
+      renderList();
+    });
+
+    // 上移/下移：在同板块内交换相邻作品的 id（复用后端的 newId 改 id 能力）
+    function moveWork(id, dir) {
+      // 找到当前板块内按 id 排序后的列表
+      var items = worksCache.filter(function (w) {
+        return currentTab === null || w.category === currentTab;
+      }).sort(function (a, b) { return a.id - b.id; });
+
+      var idx = -1;
+      for (var i = 0; i < items.length; i++) { if (items[i].id === id) { idx = i; break; } }
+      if (idx < 0) return;
+
+      var target = dir === "up" ? items[idx - 1] : items[idx + 1];
+      if (!target) return; // 已在边界，无相邻项
+
+      // 交换两条作品的 id：先给当前项设一个临时不冲突的新 id，再交换
+      var token = localStorage.getItem("admin_token");
+      var a = items[idx];       // 当前项
+      var b = target;           // 相邻项
+      var tmpId = 900000 + Math.floor(Math.random() * 99999); // 临时 id，避免与现有冲突
+
+      // 三步：a 先移到临时 id → b 移到 a 的原 id → a 从临时 id 移到 b 的原 id
+      function patchId(wid, newId) {
+        return fetch(API_BASE + "/api/works", {
+          method: "PATCH",
+          headers: authHeaders(),
+          body: JSON.stringify({ id: wid, newId: newId })
+        }).then(function (resp) {
+          if (resp.status === 401) { handleAuthFail(); throw new Error("登录已失效"); }
+          return resp.json();
+        }).then(function (json) {
+          if (!json || json.ok !== true) { throw new Error((json && json.error) || "操作失败"); }
+        });
+      }
+
+      patchId(a.id, tmpId)
+        .then(function () { return patchId(b.id, a.id); })
+        .then(function () { return patchId(tmpId, b.id); })
+        .then(function () {
+          loadWorks(); // 重新拉取列表，顺序已按新 id 生效
+        })
+        .catch(function (err) {
+          alert(toHumanError(err) || "排序失败，请稍后再试");
+          loadWorks(); // 失败也刷新，保证界面和数据库一致
+        });
+    }
 
     // 保存编辑：读取内联表单字段，发 PATCH
     function saveEdit(btn, id) {

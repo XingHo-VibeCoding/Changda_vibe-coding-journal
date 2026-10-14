@@ -31,6 +31,12 @@ body {
   padding: 48px 24px;
 }
 
+/* 分享页：随笔/资源是长文，电脑上放宽行宽；涂鸦/合影保持窄版式。
+   只在 share.html（body.share-page）且单独看随笔/资源（.share-wide）时生效。 */
+body.share-page.share-wide .container {
+  max-width: 960px;
+}
+
 .avatar {
   display: block;
   width: 96px;
@@ -133,6 +139,22 @@ a:hover { text-decoration: underline; }
 .work section h2 { margin-top: 16px; }
 .work section p {
   margin: 8px 0 0;
+}
+/* 正文段落（随笔/资源长文）：拆段后的 <p>，行高更舒展 */
+.work section p.work-para {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.9;
+  text-align: justify;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.work section p.work-para:last-child { margin-bottom: 0; }
+/* 空行占位：只撑开段落间距，不显示内容 */
+.work section p.work-para-empty {
+  height: 0;
+  margin: 0;
 }
 
 /* 作品详情页操作按钮区（资源类：下载文档 / 打开外链） */
@@ -382,12 +404,22 @@ a:hover { text-decoration: underline; }
   margin: 0 0 4px;
   font-size: 16px;
   font-weight: 600;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .list-desc {
   margin: 0;
   font-size: 13px;
   color: var(--muted);
   line-height: 1.6;
+  /* 长简介截断：列表只显示前 3 行，完整内容点进详情阅读 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* 超长无空格字符强制换行，防止撑破卡片 */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .tag {
   display: inline-block;
@@ -1279,6 +1311,46 @@ textarea.admin-input { resize: vertical; }
   background: rgba(255, 200, 90, .2);
   color: #ffe0a3;
 }
+/* === 管理后台板块标签栏（顶部标签页切换） === */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.admin-tab {
+  padding: 7px 16px;
+  border: 1px solid rgba(47, 155, 214, .3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: var(--accent-dark);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.admin-tab:hover {
+  background: #eaf5fc;
+  border-color: var(--accent);
+}
+.admin-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 板块空态占位 */
+.admin-empty {
+  padding: 24px 16px;
+  border: 1px dashed rgba(47, 155, 214, .4);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--accent-dark);
+  font-size: 14px;
+  text-align: center;
+}
+
 .admin-actions {
   display: flex;
   flex-direction: row;
@@ -1321,6 +1393,25 @@ textarea.admin-input { resize: vertical; }
   background: #e4e8eb;
   border-color: #bfc8cf;
 }
+/* 上移/下移：小巧的排序按钮 */
+.admin-btn-move {
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 1;
+  background: #f7fafc;
+  border-color: #dbe4ea;
+  color: var(--accent-dark);
+}
+.admin-btn-move:hover {
+  background: #eaf5fc;
+  border-color: var(--accent);
+}
+.admin-btn-move:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  background: #f0f2f4;
+  border-color: #e2e6ea;
+}
 .admin-btn-danger {
   border-color: #ecc8c8;
   background: #fdf3f3;
@@ -1336,4 +1427,13 @@ textarea.admin-input { resize: vertical; }
   border-color: #c0392b;
   color: #fff;
   font-weight: 600;
+}
+
+/* === 电脑端整体放大 ===
+   手机上字号合适，电脑宽屏整体偏小 → 用 zoom 同比放大整页（文字/按钮/间距一起放大）。
+   768px 是手机/平板与电脑的分界，只在电脑端生效。 */
+@media (min-width: 769px) {
+  body {
+    zoom: 1.15;
+  }
 }
