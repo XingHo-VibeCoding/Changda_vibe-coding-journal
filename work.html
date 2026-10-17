@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>作品 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=71">
+  <link rel="stylesheet" href="style.css?v=77">
 </head>
 <body class="share-page">
   <div class="bubbles" aria-hidden="true">
@@ -90,9 +90,9 @@
       <div id="work-actions" class="work-actions" hidden></div>
     </article>
 
-    <nav class="work-pager" id="work-pager">
-      <a id="prev-link" class="pager-btn" href="#" aria-label="上一个">‹</a>
-      <a id="next-link" class="pager-btn" href="#" aria-label="下一个">›</a>
+    <nav class="work-pager" id="work-pager" hidden>
+      <a id="prev-link" class="pager-btn" href="#" aria-label="上一个"><img src="img-arrow-left.png" alt=""></a>
+      <a id="next-link" class="pager-btn" href="#" aria-label="下一个"><img src="img-arrow-right.png" alt=""></a>
     </nav>
   </main>
 
@@ -113,6 +113,23 @@
       return String(s).replace(/[&<>"']/g, function (c) {
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
       });
+    }
+
+    // fileID（cloud://env.bucket/path）转永久公开 URL（https://env.tcb.qcloud.la/path）
+    // 与 admin.html 一致：历史数据可能存 cloud:// 格式，需统一转成浏览器能打开的公开链接
+    function fileIdToUrl(fileId) {
+      if (!fileId) return "";
+      if (fileId.indexOf("cloud://") === 0) {
+        var rest = fileId.slice("cloud://".length);
+        var slash = rest.indexOf("/");
+        if (slash > 0) {
+          var envBucket = rest.slice(0, slash);
+          var path = rest.slice(slash + 1);
+          var envId = envBucket.split(".")[0];
+          return "https://" + envId + ".tcb.qcloud.la/" + path;
+        }
+      }
+      return fileId;
     }
 
     // 把纯文本正文按换行拆成 <p> 段落，保留空行分段
@@ -198,10 +215,10 @@
           actionsEl.innerHTML = "";
           var actions = [];
           if (type === "res" && current.file) {
-            actions.push('<a class="work-btn" href="' + current.file + '" target="_blank" rel="noopener">下载文档</a>');
+            actions.push('<a class="work-btn" href="' + esc(fileIdToUrl(current.file)) + '" target="_blank" rel="noopener">下载文档</a>');
           }
           if (type === "res" && current.link) {
-            actions.push('<a class="work-btn" href="' + current.link + '" target="_blank" rel="noopener">打开链接</a>');
+            actions.push('<a class="work-btn" href="' + esc(current.link) + '" target="_blank" rel="noopener">打开链接</a>');
           }
           if (actions.length > 0) {
             actionsEl.innerHTML = actions.join("");
@@ -222,9 +239,9 @@
           var nextLink = document.getElementById("next-link");
           var pager = document.getElementById("work-pager");
           if (sameType.length <= 1) {
-            pager.style.display = "none";
+            pager.hidden = true;
           } else {
-            pager.style.display = "";
+            pager.hidden = false;
             var base = "work.html?cat=" + type;
             if (idx > 0) {
               prevLink.href = base + "&title=" + encodeURIComponent(sameType[idx - 1].title);

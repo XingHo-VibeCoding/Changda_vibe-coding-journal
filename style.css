@@ -195,12 +195,13 @@ a:hover { text-decoration: underline; }
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  /* 按钮内容改为装饰性箭头图（img-arrow-left/right.png），无文字 */
+  font-size: 0;
   line-height: 1;
   color: #2c3e50;
   text-decoration: none;
@@ -218,15 +219,22 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
   transform: translateY(-50%) scale(1.06);
 }
+.pager-btn img {
+  display: block;
+  height: 44px;
+  width: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 #prev-link { left: 12px; }
 #next-link { right: 12px; }
 .pager-btn.is-disabled {
-  color: rgba(44, 62, 80, .35);
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .3);
   cursor: default;
   pointer-events: none;
 }
+.pager-btn.is-disabled img { opacity: .3; }
 
 .work-empty {
   text-align: center;
@@ -928,14 +936,13 @@ a:hover { text-decoration: underline; }
 }
 .hero h1 {
   margin: 0 0 12px;
-  font-size: 46px;
-  font-weight: 700;
-  /* 白→天蓝渐变文字：background-clip 实现，drop-shadow 代替 text-shadow（后者会让渐变文字发浑） */
-  background: linear-gradient(180deg, #ffffff 20%, #a8d8f5 65%, #5db4e8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: #fff;
+}
+/* 标题改用透明 PNG 图形（1000×250），图形本身已带青蓝渐变，这里只控尺寸和投影 */
+.hero h1.hero-title img {
+  display: block;
+  width: 380px;
+  max-width: 100%;
+  height: auto;
   filter: drop-shadow(0 2px 8px rgba(8, 24, 48, .45));
 }
 .hero-sub {
@@ -1429,11 +1436,63 @@ textarea.admin-input { resize: vertical; }
   font-weight: 600;
 }
 
-/* === 电脑端整体放大 ===
-   手机上字号合适，电脑宽屏整体偏小 → 用 zoom 同比放大整页（文字/按钮/间距一起放大）。
-   768px 是手机/平板与电脑的分界，只在电脑端生效。 */
+/* === 电脑端字号提升：只放大文字，不改布局（防横向溢出） === */
 @media (min-width: 769px) {
-  body {
-    zoom: 1.15;
-  }
+  /* 只提字号，布局宽度/间距保持原样，因此不会出现横向滚动条 */
+  /* 注：.hero h1 现在是图片标题，字号对其无效，故不在此覆盖 */
+  .subtitle { font-size: 19px; }
+  .motto { font-size: 18px; }
+  section h2 { font-size: 21px; }
+  .work h1 { font-size: 31px; }
+  .work section p.work-para { font-size: 18px; }
+  .work-btn { font-size: 17px; }
+  .card h3 { font-size: 19px; }
+  .card p { font-size: 15px; }
+  .section-head h2 { font-size: 21px; }
+  .share-head h1 { font-size: 31px; }
+  .share-sub { font-size: 17px; }
+  .share-update { font-size: 14px; }
+  .filter-btn { font-size: 17px; }
+  .list-title { font-size: 19px; }
+  .list-desc { font-size: 15px; }
+  .tag { font-size: 14px; }
+  .login-card h1 { font-size: 31px; }
+  .login-card .login-sub { font-size: 17px; }
+  .login-card label { font-size: 15px; }
+  .login-card input { font-size: 17px; }
+  .login-card .login-btn { font-size: 18px; }
+  .login-error { font-size: 15px; }
+  .login-hint { font-size: 14px; }
+  .brand { font-size: 21px; }
+  .nav-links a { font-size: 17px; }
+  .intro p { font-size: 17px; }
+  .col-title { font-size: 21px; }
+  .about-list li { font-size: 17px; }
+  .about-list .k { font-size: 17px; }
+  .cat h3 { font-size: 18px; }
+  .cat p { font-size: 14px; }
+  .side-name { font-size: 26px; }
+  .side-role { font-size: 15px; }
+  .side-motto { font-size: 15px; }
+  .side-nav a { font-size: 18px; }
+  .side-login { font-size: 17px; }
+  .hero-sub { font-size: 21px; }
+  .panel-title { font-size: 21px; }
+  .intro-text p { font-size: 17px; }
+  .contact-list li { font-size: 17px; }
+  .admin-page .share-head h1 { font-size: 40px; }
+  .admin-tag { font-size: 17px; }
+  .admin-logout { font-size: 15px; }
+  .admin-tip { font-size: 15px; }
+  .admin-thumb-empty { font-size: 26px; }
+  .admin-field label { font-size: 14px; }
+  .admin-input { font-size: 17px; }
+  .admin-submit { font-size: 17px; }
+  .admin-error { font-size: 15px; }
+  .admin-item-head { font-size: 14px; }
+  .admin-tab { font-size: 15px; }
+  .admin-empty { font-size: 17px; }
+  .admin-btn { font-size: 15px; }
+  .admin-btn-move { font-size: 17px; }
 }
+/* === 电脑端字号提升 END === */

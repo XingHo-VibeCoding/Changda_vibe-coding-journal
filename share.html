@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>分享 · 个人主页</title>
-  <link rel="stylesheet" href="style.css?v=71">
+  <link rel="stylesheet" href="style.css?v=77">
 </head>
 <body class="share-page">
   <div class="bubbles" aria-hidden="true">
@@ -114,6 +114,23 @@
       return category === "resource" ? "res" : category;
     }
 
+    // fileID（cloud://env.bucket/path）转永久公开 URL（https://env.tcb.qcloud.la/path）
+    // 与 admin.html 一致：历史数据可能存 cloud:// 格式，需统一转成浏览器能打开的公开链接
+    function fileIdToUrl(fileId) {
+      if (!fileId) return "";
+      if (fileId.indexOf("cloud://") === 0) {
+        var rest = fileId.slice("cloud://".length);
+        var slash = rest.indexOf("/");
+        if (slash > 0) {
+          var envBucket = rest.slice(0, slash);
+          var path = rest.slice(slash + 1);
+          var envId = envBucket.split(".")[0];
+          return "https://" + envId + ".tcb.qcloud.la/" + path;
+        }
+      }
+      return fileId;
+    }
+
     // 把接口返回的 data 数组合成前端列表（每项带上自己的类型标识）
     function getItemsFromApi(data) {
       var items = [];
@@ -196,12 +213,13 @@
       });
       listEl.innerHTML = html;
 
-      // 「下载文档」点击：跳转文档地址，阻止触发外层卡片的跳转
+      // 「下载文档」点击：转换 cloud:// 为公开 URL 后跳转，阻止触发外层卡片的跳转
       listEl.querySelectorAll(".tag-file").forEach(function (el) {
         el.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopPropagation();
-          window.open(el.getAttribute("data-file"), "_blank");
+          var url = fileIdToUrl(el.getAttribute("data-file"));
+          if (url) { window.open(url, "_blank"); }
         });
       });
 
